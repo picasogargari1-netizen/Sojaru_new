@@ -1,0 +1,47 @@
+{
+  "summary": "First-run full-stack testing of Sojaru headless storefront against live WooCommerce. Backend: 20/20 pytest tests passed covering store config, categories, products (filters/search/pagination/orderby), product-by-slug, variations, related, coupon 404, auth (register/login/me/duplicate/bad-password), profile update, account orders, and real WooCommerce order creation. Frontend: home, mega-menu, category page, search dialog, variable-product PDP (variation selection + price update + add-to-cart enabling), cart drawer, checkout end-to-end, order confirmation with payment_url, register->/account with Orders/Profile/Address tabs, and new order visible under Account>Orders — all working.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/products (orderby=price)", "issue": "Ordering by price uses Woo default which sorts as strings for meta_value in some setups; on live store output was correctly sorted ascending so passes, but flag for regression if pricing becomes numeric-string edge cases."},
+      {"endpoint": "/api/orders", "issue": "No server-side validation that at least one line_item is present or that quantity>0 — relies on Woo to reject."},
+      {"endpoint": "/api/auth/register", "issue": "If WooCommerce customer creation fails (e.g., email already exists in WC), local user is still created with wc_customer_id=null; subsequent /api/account/orders returns [] silently. Consider surfacing warning to client."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "SearchPage.jsx", "issue": "Empty search (/search with no q) shows \"Results for \\\"\\\"\" and lists ALL 14 products instead of an empty state / prompt to type.", "selector": "/search route", "priority": "MEDIUM"},
+      {"component": "SearchDialog / CartDrawer", "issue": "Radix DialogContent used without DialogTitle/Description — throws a11y console errors on every open. Wrap title in VisuallyHidden or add DialogTitle.", "selector": "[data-testid=\"search-dialog\"], [data-testid=\"cart-drawer\"]", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Account tabs", "issues": ["Tab label reads 'Address' (singular) while spec/product language says 'Addresses' — minor copy inconsistency."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix /search empty-query behavior — render an empty state / prompt instead of listing all products.",
+    "Add DialogTitle (with VisuallyHidden if hidden) to SearchDialog and CartDrawer to remove Radix a11y warnings.",
+    "Optionally surface a soft warning in /api/auth/register response when WC customer creation fails (wc_customer_id null).",
+    "Consider renaming Account tab from 'Address' to 'Addresses' for consistency."
+  ],
+  "critical_code_review_comments": [
+    "server.py CORS uses '*' as default with allow_credentials=True — browsers reject credentialed requests with wildcard origins. Since app uses Bearer tokens via Authorization header this is fine today, but if cookies are ever used, set explicit origins.",
+    "wc_request has no retries/circuit-breaker; a transient Woo 5xx maps to 502 and breaks user flow. Consider 1-retry with backoff for GETs.",
+    "In-memory _cache dict is fine for single-worker dev but will fragment across workers in prod — move to Redis or accept eventual inconsistency.",
+    "server.py is 456 lines but still cohesive; monitor for growth and split into routers/{auth,catalog,orders}.py once >700."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "95%"},
+  "test_credentials": "Register-on-demand test user pattern: email=testpup_<uuid8>@sojaru.co.in, password=sojaru123. Real customers created in live WooCommerce (expected per problem statement).",
+  "seed_data_creation": "Tests create real WC customers and one real (unpaid, COD) WooCommerce order per full run — this is expected per user note.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend pytest suite lives at /app/backend/tests/backend_test.py and must be run with `pytest -n 0` because /app/backend/pytest.ini forces xdist loadscope but the tests share module-level STATE and must run sequentially. All 20 tests pass. Frontend flows verified: home, mega-menu -> /category/*, search dialog, variable PDP variation selection, add-to-cart, cart drawer, /checkout (COD) -> order confirmation with payment_url, register->/account with Orders/Profile/Address tabs, Account>Orders reflects newly-placed orders. Live store: https://www.sojaru.co.in — orders and customers created during tests are real (unpaid).",
+  "rca of the issue": "N/A — no blocking bugs found. Only UX polish items above."
+}

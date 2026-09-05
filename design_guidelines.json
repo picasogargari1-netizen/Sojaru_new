@@ -1,0 +1,97 @@
+{
+  "brand_identity": {
+    "name": "SOJARU",
+    "positioning": "Modern Headless Lifestyle Store for You & Your Pet",
+    "archetype": "Organic & Playful Premium (Swiss Grid meets Warm Contemporary Lifestyle)",
+    "vibe": "Curated, joyful, warm, accessible luxury, pet-first storytelling"
+  },
+  "theme": {
+    "mode": "light",
+    "toggle_supported": true,
+    "description": "Warm bone/sand background (#FAFAF7) with deep obsidian typography (#121212), vibrant playful pops of terracotta rust (#E05A47), matcha green (#4A6B53), and buttery oat (#F4EFE6)."
+  },
+  "typography": {
+    "fonts": {
+      "headline": "Cabinet Grotesk / Outfit / Playfair Display (editorial dynamic blend)",
+      "body": "Plus Jakarta Sans / Inter",
+      "mono": "JetBrains Mono (for SKU, tags, prices)"
+    },
+    "scale": {
+      "hero_h1": "text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08]",
+      "section_h2": "text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight",
+      "card_h3": "text-lg sm:text-xl font-semibold tracking-normal",
+      "body_lead": "text-base sm:text-lg text-slate-600 leading-relaxed",
+      "body_standard": "text-sm sm:text-base text-slate-700 leading-normal",
+      "micro_label": "text-xs font-mono uppercase tracking-[0.2em] text-slate-500"
+    }
+  },
+  "color_palette": {
+    "primary": "#121212",
+    "primary_hover": "#2B2B2B",
+    "accent_terracotta": "#E05A47",
+    "accent_matcha": "#4A6B53",
+    "accent_amber": "#E69A38",
+    "bg_cream": "#FAFAF7",
+    "bg_surface": "#FFFFFF",
+    "bg_subtle": "#F4EFE6",
+    "border_subtle": "rgba(18, 18, 18, 0.08)",
+    "text_main": "#121212",
+    "text_muted": "#5A5A57",
+    "pet_world_tint": "#FAF4ED",
+    "human_world_tint": "#F1F5F2"
+  },
+  "image_urls": {
+    "hero_lifestyle": "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "pet_world_card": "https://images.unsplash.com/photo-1583511655826-05700d52f4d9?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "human_world_card": "https://images.unsplash.com/photo-1623919268210-99a34497afde?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "category_clothing": "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "category_drinkware": "https://images.unsplash.com/photo-1773394089923-98880d3c5e46?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "category_pet_tags": "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "category_dog_shirts": "https://images.unsplash.com/photo-1695937107602-d9ac53393ccf?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "category_bags": "https://images.unsplash.com/photo-1576192350050-d9e08ee1f122?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "lifestyle_banner": "https://images.unsplash.com/photo-1583336663277-620dc1996580?crop=entropy&cs=srgb&fm=jpg&q=85"
+  },
+  "layout_and_spacing": {
+    "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "section_padding": "py-16 sm:py-24",
+    "grid_bento": "grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8",
+    "hero_grid": "grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
+  },
+  "component_guidelines": {
+    "header_nav": "Sticky glassmorphism header (backdrop-blur-md bg-white/80 border-b border-black/5 z-50). Mega-menus for 'FOR YOU' and 'FOR YOUR PET' with visual subcategory previews.",
+    "hero_section": "Asymmetric visual layout. Headline on left with dual CTAs ('Shop Now', 'Shop For Your Pet'). Right side features pill-framed lifestyle photography and interactive hover badge.",
+    "two_shopping_worlds": "Side-by-side hero-level dual cards for 'FOR YOU' and 'FOR YOUR PET'. Subtle zoom effect on hover, distinctive background tinting, clear subcategory pills.",
+    "product_card": "Minimalist rectangular product cards with 1px border (#E5E5E0). Image aspect-ratio 4:5 with secondary image reveal on hover. Pill sale/new badges, variant quick-swatch dots, wishlist button, and quick add-to-cart drawer trigger.",
+    "cart_drawer": "Slide-over drawer with free shipping progress bar, item list with quantity steppers, cross-sell recommendation carousel ('Add a matching Pet Tag'), subtotal, tax estimation, and checkout button.",
+    "pdp_product_detail": "2-column layout: Sticky media gallery grid on left, sticky product info on right. Swatches for size/color, pet-size guide trigger, expandable accordion tabs (Details, Shipping, Materials), customer review stars + pet photos.",
+    "account_dashboard": "Clean tabbed sidebar (Orders, Addresses, Saved Pets Profiles, Account Details, Wishlist). Responsive table view for order status with tracking link modal."
+  },
+  "motion_and_interactions": {
+    "hover_buttons": "transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md active:translate-y-0",
+    "card_hover": "transition-transform duration-300 ease-out hover:-translate-y-1.5",
+    "toast_notifications": "Use Sonner for slide-in toast notifications upon Add to Cart and Wishlist actions.",
+    "drawer_transition": "Smooth framer-motion or CSS slide-in from right"
+  },
+  "data_testing_rules": {
+    "rule": "ALL interactive buttons, inputs, links, cards, tabs, select boxes MUST have descriptive kebab-case data-testid attributes.",
+    "examples": [
+      "data-testid=\"header-cart-button\"",
+      "data-testid=\"hero-shop-for-you-btn\"",
+      "data-testid=\"hero-shop-for-pet-btn\"",
+      "data-testid=\"product-card-101\"",
+      "data-testid=\"quick-add-to-cart-btn\"",
+      "data-testid=\"cart-drawer-checkout-button\"",
+      "data-testid=\"pdp-add-to-cart-button\"",
+      "data-testid=\"filter-category-select\""
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Follow this document strictly. Do NOT use default plain WooCommerce tables or generic templates.",
+    "Implement the two core shopping worlds 'FOR YOU' and 'FOR YOUR PET' with prominent visual distinction throughout the user journey.",
+    "Subcategories for 'FOR YOU': Clothing, Drinkware, Caps, Stationery, Accessories, Bags, Gifting.",
+    "Subcategories for 'FOR YOUR PET': Pet Tags, Unisex Dog Shirts.",
+    "Ensure seamless state management for Cart Drawer, Quick View, Search modal, and Filter/Sort on Category pages.",
+    "Include mock data rich with products for both humans and pets (e.g. 'Matchy-Matchy Human & Dog Hoodie Set', 'Sojaru Stainless Pet Water Bottle', 'Handcrafted Brass Pet Tag').",
+    "All interactive elements MUST include data-testid attributes."
+  ]
+}
