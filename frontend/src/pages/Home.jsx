@@ -1,18 +1,36 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, PawPrint, Truck, Leaf, Asterisk } from "lucide-react";
+import { ArrowRight, PawPrint, Asterisk } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/context/StoreContext";
 import { useProducts } from "@/hooks/useProducts";
 import { ProductRow } from "@/components/ProductRow";
 import { SectionHeader } from "@/components/States";
 import { IMAGES, catImage } from "@/lib/assets";
+import { mediaUrl } from "@/lib/api";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
 function Hero() {
+  const { settings } = useStore();
+  const heroImages = settings?.hero_images?.length
+    ? settings.hero_images.map((h) => ({ src: mediaUrl(h.url), alt: h.alt }))
+    : [{ src: IMAGES.hero, alt: "A woman relaxing with her golden retriever, both in cozy Sojaru knits" }];
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    setIdx(0);
+    if (heroImages.length < 2) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % heroImages.length), 5000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [heroImages.length]);
+
   return (
     <section className="relative border-b-4 border-ink">
-      <div className="absolute inset-0">
-        <img src={IMAGES.hero} alt="A woman relaxing with her golden retriever, both in cozy Sojaru knits" className="h-full w-full object-cover object-[72%_center]" />
+      <div className="absolute inset-0 overflow-hidden bg-ink">
+        {heroImages.map((img, i) => (
+          <img key={i} src={img.src} alt={img.alt} className={`absolute inset-0 h-full w-full object-cover object-[72%_center] transition-opacity duration-1000 ${i === idx ? "opacity-100" : "opacity-0"}`} />
+        ))}
         <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/60 to-ink/15 sm:to-transparent" />
       </div>
       <div className="relative mx-auto flex min-h-[580px] max-w-7xl items-center px-4 py-16 sm:min-h-[640px] sm:px-6 lg:min-h-[86vh] lg:px-8">
@@ -34,14 +52,43 @@ function Hero() {
               <Link to="/shop/for-your-pet" data-testid="hero-shop-for-pet-btn"><PawPrint className="mr-2 h-4 w-4" /> Shop For Your Pet</Link>
             </Button>
           </div>
-          <div className="mt-9 flex animate-fade-up flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-cream/80" style={{ animationDelay: "320ms" }}>
-            <span className="flex items-center gap-2"><Truck className="h-4 w-4" /> Free shipping over ₹1,499</span>
-            <span className="flex items-center gap-2"><Leaf className="h-4 w-4" /> Sustainably made</span>
-          </div>
         </div>
       </div>
+      {heroImages.length > 1 && (
+        <div className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+          {heroImages.map((_, i) => (
+            <button key={i} onClick={() => setIdx(i)} aria-label={`Go to slide ${i + 1}`} data-testid={`hero-dot-${i}`}
+              className={`h-2.5 rounded-full transition-all ${i === idx ? "w-8 bg-yellow" : "w-2.5 bg-cream/60 hover:bg-cream"}`} />
+          ))}
+        </div>
+      )}
       <div className="absolute bottom-6 right-6 z-10 hidden h-28 w-28 rotate-[-10deg] items-center justify-center rounded-full border-4 border-ink bg-yellow text-center shadow-[4px_4px_0_0_#111] lg:flex">
         <span className="font-display text-base font-extrabold uppercase leading-tight text-ink">Matchy<br />Matchy</span>
+      </div>
+    </section>
+  );
+}
+
+function FestiveSection() {
+  const { settings } = useStore();
+  const festive = settings?.festive;
+  const catId = festive?.category_id;
+  const { items, loading, error, reload } = useProducts({ category: catId || undefined, per_page: 8 }, [catId]);
+  if (!festive || !festive.enabled || !catId) return null;
+  if (!loading && !error && items.length === 0) return null;
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="border-4 border-ink bg-softyellow p-6 shadow-[8px_8px_0_0_#111] sm:p-10">
+        <div className="mb-7 flex items-end justify-between gap-4">
+          <div>
+            <div className="mb-3 inline-block bg-ink px-2.5 py-1 text-[0.7rem] font-bold uppercase tracking-[0.18em] text-yellow">Limited edition</div>
+            <h2 className="font-display text-4xl font-extrabold uppercase tracking-tight text-ink sm:text-5xl" data-testid="festive-title">{festive.title}</h2>
+          </div>
+          <Link to="/category/festive-collections" className="hidden shrink-0 items-center gap-1 border-2 border-ink bg-cream px-4 py-2 text-sm font-bold text-ink transition-colors hover:bg-yellow sm:flex">
+            View all
+          </Link>
+        </div>
+        <ProductRow items={items} loading={loading} error={error} onRetry={reload} emptyMsg="Assign products to your Festive Collections category in WooCommerce." />
       </div>
     </section>
   );
@@ -151,6 +198,7 @@ export default function Home() {
     <>
       <Hero />
       <MarqueeBand />
+      <FestiveSection />
       <ShoppingWorlds />
       <CollectionRow slug="featured-collection" eyebrow="Hand-picked" title="Featured" to="/category/featured-collection" />
       <ShopByCategory />

@@ -2,6 +2,7 @@ import axios from "axios";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
+export const mediaUrl = (url) => (url ? `${BACKEND_URL}${url}` : url);
 
 const client = axios.create({ baseURL: API });
 
@@ -22,6 +23,13 @@ export function apiErr(e, fallback = "Something went wrong. Please try again.") 
 export const store = {
   config: () => client.get("/store/config").then((r) => r.data),
   categories: () => client.get("/categories").then((r) => r.data),
+  settings: () => client.get("/settings").then((r) => r.data),
+};
+
+export const admin = {
+  updateSettings: (payload) => client.put("/admin/settings", payload).then((r) => r.data),
+  uploadHero: (formData) => client.post("/admin/hero-images", formData, { headers: { "Content-Type": "multipart/form-data" } }).then((r) => r.data),
+  deleteHero: (id) => client.delete(`/admin/hero-images/${id}`).then((r) => r.data),
 };
 
 export const products = {

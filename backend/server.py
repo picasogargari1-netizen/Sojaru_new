@@ -4,7 +4,9 @@ load_dotenv(Path(__file__).parent / '.env')
 
 import os
 import time
+import uuid
 import logging
+import requests
 from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Any
 
@@ -12,7 +14,7 @@ import jwt
 import bcrypt
 import httpx
 from bson import ObjectId
-from fastapi import FastAPI, APIRouter, HTTPException, Request, Query, Depends
+from fastapi import FastAPI, APIRouter, HTTPException, Request, Query, Depends, UploadFile, File, Response
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, EmailStr, Field
@@ -28,6 +30,48 @@ WC_SECRET = os.environ['WC_CONSUMER_SECRET']
 JWT_SECRET = os.environ['JWT_SECRET']
 JWT_ALG = "HS256"
 WC_BASE = f"{WC_STORE_URL}/wp-json/wc/v3"
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'hello@sojaru.co.in').lower()
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
+
+# Object storage
+STORAGE_BASE = (os.environ.get("INTEGRATION_PROXY_URL") or "").strip() or "https://integrations.emergentagent.com"
+STORAGE_URL = STORAGE_BASE.rstrip("/") + "/objstore/api/v1/storage"
+EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
+APP_NAME = "sojaru"
+_storage_key = None
+MIME_TYPES = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+              "gif": "image/gif", "webp": "image/webp"}
+
+def init_storage(force: bool = False):
+    global _storage_key
+    if _storage_key and not force:
+        return _storage_key
+    resp = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_KEY}, timeout=30)
+    resp.raise_for_status()
+    _storage_key = resp.json()["storage_key"]
+    return _storage_key
+
+def put_object(path: str, data: bytes, content_type: str) -> dict:
+    key = init_storage()
+    resp = requests.put(f"{STORAGE_URL}/objects/{path}",
+                        headers={"X-Storage-Key": key, "Content-Type": content_type},
+                        data=data, timeout=120)
+    if resp.status_code == 404:
+        key = init_storage(force=True)
+        resp = requests.put(f"{STORAGE_URL}/objects/{path}",
+                            headers={"X-Storage-Key": key, "Content-Type": content_type},
+                            data=data, timeout=120)
+    resp.raise_for_status()
+    return resp.json()
+
+def get_object(path: str):
+    key = init_storage()
+    resp = requests.get(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key}, timeout=60)
+    if resp.status_code == 404:
+        key = init_storage(force=True)
+        resp = requests.get(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key}, timeout=60)
+    resp.raise_for_status()
+    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("sojaru")
@@ -141,7 +185,39 @@ async def get_current_user(request: Request) -> dict:
         raise HTTPException(status_code=401, detail="User not found")
     user["id"] = str(user.pop("_id"))
     user.pop("password_hash", None)
+    user["is_admin"] = bool(user.get("is_admin"))
     return user
+
+
+async def get_admin_user(user: dict = Depends(get_current_user)) -> dict:
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+
+DEFAULT_MARQUEE = [
+    "Free shipping over ₹1,499",
+    "Curated for you & your best friend",
+    "New season, new arrivals",
+    "Handmade pet tags, engraved with love",
+    "Made in India, with love",
+]
+
+async def get_settings_doc() -> dict:
+    doc = await db.settings.find_one({"_id": "site"})
+    if not doc:
+        doc = {"_id": "site", "hero_images": [], "marquee_texts": DEFAULT_MARQUEE,
+               "festive": {"title": "Festive Collection", "category_id": 33, "enabled": True}}
+        await db.settings.insert_one(doc)
+    return doc
+
+def public_settings(doc: dict) -> dict:
+    return {
+        "hero_images": [{"id": h["id"], "url": f"/api/media/{h['storage_path']}", "alt": h.get("alt", "Sojaru")}
+                        for h in doc.get("hero_images", [])],
+        "marquee_texts": doc.get("marquee_texts", DEFAULT_MARQUEE),
+        "festive": doc.get("festive", {"title": "Festive Collection", "category_id": 33, "enabled": True}),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -374,7 +450,7 @@ async def register(body: RegisterIn):
     uid = str(res.inserted_id)
     token = create_token(uid, email)
     return {"token": token, "user": {"id": uid, "email": email, "first_name": body.first_name,
-            "last_name": body.last_name, "wc_customer_id": wc_customer_id}}
+            "last_name": body.last_name, "wc_customer_id": wc_customer_id, "is_admin": False}}
 
 @api.post("/auth/login")
 async def login(body: LoginIn):
@@ -386,7 +462,7 @@ async def login(body: LoginIn):
     token = create_token(uid, email)
     return {"token": token, "user": {"id": uid, "email": email,
             "first_name": user.get("first_name", ""), "last_name": user.get("last_name", ""),
-            "wc_customer_id": user.get("wc_customer_id")}}
+            "wc_customer_id": user.get("wc_customer_id"), "is_admin": bool(user.get("is_admin"))}}
 
 @api.get("/auth/me")
 async def me(user: dict = Depends(get_current_user)):
@@ -436,6 +512,75 @@ async def account_orders(user: dict = Depends(get_current_user)):
     return orders
 
 
+class SettingsUpdate(BaseModel):
+    marquee_texts: Optional[List[str]] = None
+    festive: Optional[dict] = None
+
+
+@api.get("/settings")
+async def get_settings():
+    doc = await get_settings_doc()
+    return public_settings(doc)
+
+
+@api.get("/media/{path:path}")
+async def media(path: str):
+    try:
+        data, content_type = get_object(path)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Image not found")
+    return Response(content=data, media_type=content_type,
+                    headers={"Cache-Control": "public, max-age=86400"})
+
+
+@api.put("/admin/settings")
+async def admin_update_settings(body: SettingsUpdate, admin: dict = Depends(get_admin_user)):
+    updates = {}
+    if body.marquee_texts is not None:
+        updates["marquee_texts"] = [t.strip() for t in body.marquee_texts if t and t.strip()]
+    if body.festive is not None:
+        f = body.festive
+        updates["festive"] = {
+            "title": (f.get("title") or "Festive Collection").strip(),
+            "category_id": int(f["category_id"]) if f.get("category_id") else None,
+            "enabled": bool(f.get("enabled", True)),
+        }
+    if updates:
+        await db.settings.update_one({"_id": "site"}, {"$set": updates}, upsert=True)
+    doc = await get_settings_doc()
+    return public_settings(doc)
+
+
+@api.post("/admin/hero-images")
+async def admin_upload_hero(file: UploadFile = File(...), admin: dict = Depends(get_admin_user)):
+    doc = await get_settings_doc()
+    if len(doc.get("hero_images", [])) >= 5:
+        raise HTTPException(status_code=400, detail="You can have a maximum of 5 hero images. Delete one first.")
+    ext = (file.filename.rsplit(".", 1)[-1] if "." in (file.filename or "") else "jpg").lower()
+    if ext not in MIME_TYPES:
+        raise HTTPException(status_code=400, detail="Please upload a JPG, PNG, GIF or WebP image.")
+    data = await file.read()
+    if len(data) > 8 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image too large. Please keep it under 8MB.")
+    path = f"{APP_NAME}/hero/{uuid.uuid4()}.{ext}"
+    try:
+        result = put_object(path, data, MIME_TYPES[ext])
+    except Exception as e:
+        logger.error(f"Hero upload failed: {e}")
+        raise HTTPException(status_code=502, detail="Upload failed. Please try again.")
+    record = {"id": str(uuid.uuid4()), "storage_path": result["path"], "alt": "Sojaru"}
+    await db.settings.update_one({"_id": "site"}, {"$push": {"hero_images": record}}, upsert=True)
+    doc = await get_settings_doc()
+    return public_settings(doc)
+
+
+@api.delete("/admin/hero-images/{image_id}")
+async def admin_delete_hero(image_id: str, admin: dict = Depends(get_admin_user)):
+    await db.settings.update_one({"_id": "site"}, {"$pull": {"hero_images": {"id": image_id}}})
+    doc = await get_settings_doc()
+    return public_settings(doc)
+
+
 app.include_router(api)
 app.add_middleware(
     CORSMiddleware,
@@ -448,6 +593,25 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup():
     await db.users.create_index("email", unique=True)
+    # Seed admin (idempotent, re-hash if password changed)
+    existing = await db.users.find_one({"email": ADMIN_EMAIL})
+    if not existing:
+        await db.users.insert_one({
+            "email": ADMIN_EMAIL, "password_hash": hash_password(ADMIN_PASSWORD),
+            "first_name": "Sojaru", "last_name": "Admin", "is_admin": True,
+            "wc_customer_id": None, "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+    else:
+        upd = {"is_admin": True}
+        if not verify_password(ADMIN_PASSWORD, existing["password_hash"]):
+            upd["password_hash"] = hash_password(ADMIN_PASSWORD)
+        await db.users.update_one({"email": ADMIN_EMAIL}, {"$set": upd})
+    await get_settings_doc()
+    try:
+        init_storage()
+        logger.info("Storage initialized")
+    except Exception as e:
+        logger.error(f"Storage init failed: {e}")
 
 @app.on_event("shutdown")
 async def shutdown():

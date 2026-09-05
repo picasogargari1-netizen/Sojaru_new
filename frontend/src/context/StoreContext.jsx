@@ -10,10 +10,14 @@ export function StoreProvider({ children }) {
   const [symbol, setSymbol] = useState("₹");
   const [code, setCode] = useState("INR");
   const [categories, setCategories] = useState([]);
+  const [settings, setSettings] = useState(null);
   const [loaded, setLoaded] = useState(false);
+
+  const reloadSettings = () => store.settings().then(setSettings).catch(() => {});
 
   useEffect(() => {
     store.config().then((c) => { setSymbol(c.currency_symbol || "₹"); setCode(c.currency_code || "INR"); }).catch(() => {});
+    reloadSettings();
     store.categories()
       .then((c) => setCategories(c))
       .catch(() => {})
@@ -41,7 +45,7 @@ export function StoreProvider({ children }) {
 
   return (
     <StoreContext.Provider
-      value={{ symbol, money, categories, loaded, forYou, forPet, childrenOf, bySlug }}
+      value={{ symbol, money, categories, loaded, forYou, forPet, childrenOf, bySlug, settings, reloadSettings }}
     >
       {children}
     </StoreContext.Provider>

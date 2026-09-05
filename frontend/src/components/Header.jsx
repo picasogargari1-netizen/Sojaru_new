@@ -47,7 +47,7 @@ function MegaMenu({ world, subcats, onNavigate }) {
 }
 
 export function Header() {
-  const { forYou, forPet, childrenOf } = useStore();
+  const { forYou, forPet, childrenOf, settings } = useStore();
   const { count, setOpen } = useCart();
   const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -56,6 +56,7 @@ export function Header() {
 
   const forYouSubs = forYou ? childrenOf(forYou.id) : [];
   const forPetSubs = forPet ? childrenOf(forPet.id) : [];
+  const marquee = settings?.marquee_texts?.length ? settings.marquee_texts : marqueeItems;
 
   const navLink = "relative py-2 text-sm font-semibold text-ink transition-colors hover:text-terracotta";
 
@@ -63,7 +64,7 @@ export function Header() {
     <>
       <div className="overflow-hidden bg-ink text-cream">
         <div className="flex whitespace-nowrap py-2 animate-marquee">
-          {[...marqueeItems, ...marqueeItems, ...marqueeItems, ...marqueeItems].map((t, i) => (
+          {[...marquee, ...marquee, ...marquee, ...marquee].map((t, i) => (
             <span key={i} className="mx-6 flex items-center gap-2 text-[0.72rem] font-medium uppercase tracking-[0.18em]">
               <PawPrint className="h-3 w-3 text-amber" /> {t}
             </span>

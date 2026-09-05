@@ -17,6 +17,8 @@ import AccountPage from "@/pages/AccountPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import InfoPage from "@/pages/InfoPage";
+import AdminLoginPage from "@/pages/AdminLoginPage";
+import AdminDashboard from "@/pages/AdminDashboard";
 
 function NotFound() {
   return (
@@ -36,6 +38,8 @@ function App() {
         <CartProvider>
           <BrowserRouter>
             <Routes>
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/admin" element={<AdminDashboard />} />
               <Route element={<Layout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/shop/:slug" element={<WorldPage />} />

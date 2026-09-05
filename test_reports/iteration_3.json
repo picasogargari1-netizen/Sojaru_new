@@ -1,0 +1,37 @@
+{
+  "summary": "Iteration 3 verified the new admin panel + hero carousel + marquee + festive collection features end-to-end (backend + frontend UI). Backend: admin login (hello@sojaru.co.in / Sojaru@123) returns is_admin=true; customer login returns is_admin=false; non-admin PUT /api/admin/settings correctly returns 403; POST /api/admin/hero-images uploads and object-storage-serves via /api/media/{path}; DELETE removes the image; GET /api/settings reflects hero_images, marquee_texts, festive; category 33 has products. Frontend: /admin without a token redirects to /admin/login; wrong password stays on login; a non-admin JWT does not reach /admin; admin login redirects to /admin dashboard ('Welcome back, admin!'). Hero tab uploads 2 tiny PNGs (0/5 counter present) — homepage then shows a 2-dot auto-sliding carousel; the 'Free shipping over ₹1,499' and 'Sustainably made' texts are GONE from the hero (marquee band still shows them, per design). Moving Text tab shows 5 marquee inputs prefilled with saved values. Festive tab shows editable title (default 'Festive Collection'), category select, and enabled toggle; homepage renders bordered 'FESTIVE COLLECTION' card below hero with products from category 33. Cleanup performed: both uploaded hero images deleted, marquee_texts and festive left at defaults.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/auth/register", "issue": "Response user object does not include is_admin field (returns undefined/null). POST /api/auth/login correctly returns is_admin: false/true. Recommend adding \"is_admin\": bool(user.get(\"is_admin\")) to the register response for symmetry."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Hero (auto-slide carousel)", "issues": ["Only tiny 1x1 PNGs uploaded during testing — real 5MB hero images should be verified for object-fit/cropping on wide viewports. Not a blocker."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Minor) Include is_admin in /api/auth/register response for parity with /api/auth/login.",
+    "(Carryover from iter 2) /api/orders payload still omits shipping_lines → WC order total mismatches checkout summary for subtotal < ₹1,499."
+  ],
+  "critical_code_review_comments": [
+    "server.py: seed_admin is idempotent and updates password_hash if ADMIN_PASSWORD changed — good. Register endpoint should also project is_admin into the returned user object.",
+    "AdminDashboard hero grid: 'max 5' is enforced server-side (400 error) but the client 'Upload' tile is still shown at 5/5 — consider hiding/disabling the upload tile when count>=5 to avoid a wasted round-trip.",
+    "server.py is 621 lines; still growing. Consider splitting admin/settings + media routes into their own module."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "Admin: hello@sojaru.co.in / Sojaru@123. Customer: register-on-demand (test_regchk_<uuid>@sojaru.co.in / sojaru123). Seed customer testpup@sojaru.co.in from /app/memory/test_credentials.md does NOT exist in the DB — created several test_* customers during testing.",
+  "seed_data_creation": "Registered a couple of test customers via /api/auth/register for the non-admin is_admin check. Uploaded 2 hero PNGs then deleted both (net-zero). Settings restored to defaults.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All new admin/hero/marquee/festive flows pass. Backend pytest suite at /app/backend/tests/backend_test.py from iter 2 still valid (25 tests). Known open bug (iter 2, not this iteration): /api/orders omits shipping_lines so WC records total without ₹99 shipping when subtotal < ₹1,499. If retested, use the API-driven flow already in backend_test.py::test_create_order_authenticated.",
+  "rca of the issue": "N/A for iteration 3 — no new critical bugs. Prior iter 2 shipping-lines RCA still stands."
+}
