@@ -10,7 +10,7 @@ import uuid
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://sojaru-launch.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://database-assistant-1.preview.emergentagent.com").rstrip("/")
 API = f"{BASE_URL}/api"
 
 # Shared state
