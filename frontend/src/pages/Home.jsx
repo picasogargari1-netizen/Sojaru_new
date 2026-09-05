@@ -10,39 +10,38 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden border-b-4 border-ink bg-cream">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 py-12 sm:px-6 lg:grid-cols-2 lg:gap-12 lg:py-20 lg:px-8">
-        <div>
+    <section className="relative border-b-4 border-ink">
+      <div className="absolute inset-0">
+        <img src={IMAGES.hero} alt="A woman relaxing with her golden retriever, both in cozy Sojaru knits" className="h-full w-full object-cover object-[72%_center]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/60 to-ink/15 sm:to-transparent" />
+      </div>
+      <div className="relative mx-auto flex min-h-[580px] max-w-7xl items-center px-4 py-16 sm:min-h-[640px] sm:px-6 lg:min-h-[86vh] lg:px-8">
+        <div className="max-w-xl">
           <div className="inline-flex animate-fade-up items-center gap-2 bg-yellow px-3 py-1.5 text-xs font-bold uppercase tracking-[0.15em] text-ink">
             <PawPrint className="h-4 w-4" /> Lifestyle for people & pets
           </div>
-          <h1 className="mt-5 animate-fade-up font-display text-5xl font-extrabold uppercase leading-[0.9] tracking-tighter text-ink sm:text-6xl lg:text-7xl" style={{ animationDelay: "80ms" }}>
-            For you<br />& your<br /><span className="mt-1 inline-block bg-ink px-2 text-yellow">best friend</span>
+          <h1 className="mt-5 animate-fade-up font-display text-5xl font-extrabold uppercase leading-[0.9] tracking-tighter text-cream sm:text-6xl lg:text-7xl" style={{ animationDelay: "80ms" }}>
+            For you<br />& your<br /><span className="mt-1 inline-block bg-yellow px-2 text-ink">best friend</span>
           </h1>
-          <p className="mt-6 max-w-md animate-fade-up text-base font-medium leading-relaxed text-ink/70 sm:text-lg" style={{ animationDelay: "160ms" }}>
+          <p className="mt-6 max-w-md animate-fade-up text-base font-medium leading-relaxed text-cream/85 sm:text-lg" style={{ animationDelay: "160ms" }}>
             Boldly designed everyday goods — for the humans who love hard and the pets who love harder. Made in India, for both of you.
           </p>
           <div className="mt-8 flex animate-fade-up flex-wrap gap-3" style={{ animationDelay: "240ms" }}>
-            <Button asChild className="h-12 rounded-none bg-ink px-8 text-base font-bold uppercase text-cream transition-all hover:-translate-y-1 hover:bg-yellow hover:text-ink">
+            <Button asChild className="h-12 rounded-none bg-yellow px-8 text-base font-bold uppercase text-ink transition-all hover:-translate-y-1 hover:bg-cream">
               <Link to="/shop/for-you" data-testid="hero-shop-for-you-btn">Shop Now <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
-            <Button asChild variant="outline" className="h-12 rounded-none border-2 border-ink bg-yellow px-8 text-base font-bold uppercase text-ink transition-all hover:-translate-y-1 hover:bg-ink hover:text-yellow">
+            <Button asChild variant="outline" className="h-12 rounded-none border-2 border-cream bg-transparent px-8 text-base font-bold uppercase text-cream transition-all hover:-translate-y-1 hover:bg-cream hover:text-ink">
               <Link to="/shop/for-your-pet" data-testid="hero-shop-for-pet-btn"><PawPrint className="mr-2 h-4 w-4" /> Shop For Your Pet</Link>
             </Button>
           </div>
-          <div className="mt-9 flex animate-fade-up flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-ink/70" style={{ animationDelay: "320ms" }}>
+          <div className="mt-9 flex animate-fade-up flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-cream/80" style={{ animationDelay: "320ms" }}>
             <span className="flex items-center gap-2"><Truck className="h-4 w-4" /> Free shipping over ₹1,499</span>
             <span className="flex items-center gap-2"><Leaf className="h-4 w-4" /> Sustainably made</span>
           </div>
         </div>
-        <div className="relative">
-          <div className="relative animate-fade-in overflow-hidden border-4 border-ink bg-oat" style={{ animationDelay: "200ms" }}>
-            <img src={IMAGES.hero} alt="A woman relaxing with her golden retriever, both in cozy Sojaru knits" className="aspect-[5/4] w-full object-cover" />
-          </div>
-          <div className="absolute -bottom-6 -left-4 flex h-24 w-24 rotate-[-10deg] items-center justify-center rounded-full border-4 border-ink bg-yellow text-center shadow-[4px_4px_0_0_#111] sm:h-28 sm:w-28">
-            <span className="font-display text-sm font-extrabold uppercase leading-tight text-ink sm:text-base">Matchy<br />Matchy</span>
-          </div>
-        </div>
+      </div>
+      <div className="absolute bottom-6 right-6 z-10 hidden h-28 w-28 rotate-[-10deg] items-center justify-center rounded-full border-4 border-ink bg-yellow text-center shadow-[4px_4px_0_0_#111] lg:flex">
+        <span className="font-display text-base font-extrabold uppercase leading-tight text-ink">Matchy<br />Matchy</span>
       </div>
     </section>
   );
