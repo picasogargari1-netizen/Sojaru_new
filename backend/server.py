@@ -174,6 +174,7 @@ class OrderIn(BaseModel):
     shipping: Optional[dict] = None
     customer_note: Optional[str] = ""
     coupon_lines: List[dict] = []
+    shipping_lines: List[dict] = []
     payment_method: str = "cod"
     payment_method_title: str = "Cash on Delivery"
 
@@ -330,6 +331,7 @@ async def create_order(body: OrderIn, request: Request):
         "shipping": body.shipping or body.billing,
         "line_items": [li.model_dump(exclude_none=True) for li in body.line_items],
         "coupon_lines": body.coupon_lines,
+        "shipping_lines": body.shipping_lines,
         "customer_note": body.customer_note or "",
     }
     if user and user.get("wc_customer_id"):

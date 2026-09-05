@@ -8,10 +8,11 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { SearchDialog } from "@/components/SearchDialog";
 
 const marqueeItems = [
-  "Free shipping over $75",
+  "Free shipping over ₹1,499",
   "Curated for you & your best friend",
   "New season, new arrivals",
   "Handmade pet tags, engraved with love",
+  "Made in India, with love",
 ];
 
 function MegaMenu({ world, subcats, onNavigate }) {
@@ -82,7 +83,7 @@ export function Header() {
               <SheetContent side="left" className="w-[86vw] max-w-sm overflow-y-auto bg-cream p-0">
                 <SheetTitle className="sr-only">Menu</SheetTitle>
                 <div className="flex items-center justify-between border-b border-border p-5">
-                  <span className="font-display text-2xl font-semibold tracking-tight">Sojaru</span>
+                  <img src="/sojaru-logo.png" alt="Sojaru" className="h-10 w-auto" />
                   <button onClick={() => setMobileOpen(false)} aria-label="Close"><X className="h-5 w-5" /></button>
                 </div>
                 <MobileNav
@@ -95,9 +96,7 @@ export function Header() {
           </div>
 
           <Link to="/" data-testid="logo-link" className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
-            <span className="font-display text-[1.7rem] font-semibold leading-none tracking-tight text-ink">
-              Sojaru<span className="text-terracotta">.</span>
-            </span>
+            <img src="/sojaru-logo.png" alt="Sojaru" className="h-11 w-auto sm:h-12" />
           </Link>
 
           <nav className="hidden items-center gap-7 lg:flex">
@@ -114,7 +113,7 @@ export function Header() {
               </Link>
               {forPet && <MegaMenu world={forPet} subcats={forPetSubs} onNavigate={() => {}} />}
             </div>
-            <Link to="/new-arrivals" className={navLink} data-testid="nav-new-arrivals">New Arrivals</Link>
+            <Link to="/category/new-arrivals" className={navLink} data-testid="nav-new-arrivals">New Arrivals</Link>
             <Link to="/category/gifting" className={navLink} data-testid="nav-gifting">Gifting</Link>
             <Link to="/about" className={navLink} data-testid="nav-about">About Us</Link>
             <Link to="/contact" className={navLink} data-testid="nav-contact">Contact</Link>
@@ -176,7 +175,7 @@ function MobileNav({ forYou, forPet, forYouSubs, forPetSubs, close }) {
       <button onClick={() => go("/")} className="block w-full border-b border-border px-5 py-4 text-left text-base font-semibold">Home</button>
       {forYou && <Group world={forYou} subs={forYouSubs} id="you" />}
       {forPet && <Group world={forPet} subs={forPetSubs} id="pet" />}
-      <button onClick={() => go("/new-arrivals")} className="block w-full border-b border-border px-5 py-4 text-left text-base font-semibold">New Arrivals</button>
+      <button onClick={() => go("/category/new-arrivals")} className="block w-full border-b border-border px-5 py-4 text-left text-base font-semibold">New Arrivals</button>
       <button onClick={() => go("/category/gifting")} className="block w-full border-b border-border px-5 py-4 text-left text-base font-semibold">Gifting</button>
       <button onClick={() => go("/about")} className="block w-full border-b border-border px-5 py-4 text-left text-base font-semibold">About Us</button>
       <button onClick={() => go("/contact")} className="block w-full border-b border-border px-5 py-4 text-left text-base font-semibold">Contact</button>

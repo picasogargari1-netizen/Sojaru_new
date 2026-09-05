@@ -13,9 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { usePageMeta } from "@/hooks/usePageMeta";
 
 const COUNTRIES = [
-  { code: "US", name: "United States" }, { code: "IN", name: "India" },
+  { code: "IN", name: "India" }, { code: "US", name: "United States" },
   { code: "GB", name: "United Kingdom" }, { code: "CA", name: "Canada" },
   { code: "AU", name: "Australia" }, { code: "SG", name: "Singapore" },
+  { code: "AE", name: "United Arab Emirates" },
 ];
 
 export default function CheckoutPage() {
@@ -27,7 +28,7 @@ export default function CheckoutPage() {
 
   const [form, setForm] = useState({
     email: user?.email || "", first_name: user?.first_name || "", last_name: user?.last_name || "",
-    phone: "", address_1: "", city: "", state: "", postcode: "", country: "US", note: "",
+    phone: "", address_1: "", city: "", state: "", postcode: "", country: "IN", note: "",
   });
   const [coupon, setCoupon] = useState("");
   const [applied, setApplied] = useState(null);
@@ -45,7 +46,7 @@ export default function CheckoutPage() {
     if (applied.discount_type === "percent") return (subtotal * amt) / 100;
     return Math.min(amt, subtotal);
   })();
-  const shipping = subtotal >= 75 || subtotal === 0 ? 0 : 8;
+  const shipping = subtotal >= 1499 || subtotal === 0 ? 0 : 99;
   const total = Math.max(0, subtotal - discount) + shipping;
 
   const applyCoupon = async () => {
@@ -78,6 +79,9 @@ export default function CheckoutPage() {
         line_items: items.map((i) => ({ product_id: i.productId, quantity: i.quantity, variation_id: i.variationId || undefined })),
         billing: address, shipping: address, customer_note: form.note,
         coupon_lines: applied ? [{ code: applied.code }] : [],
+        shipping_lines: [shipping > 0
+          ? { method_id: "flat_rate", method_title: "Flat rate", total: String(shipping) }
+          : { method_id: "free_shipping", method_title: "Free shipping", total: "0" }],
         payment_method: "sojaru_gateway", payment_method_title: "Secure Payment (WooCommerce)",
       });
       clear();

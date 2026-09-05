@@ -30,7 +30,7 @@ function Hero() {
             </Button>
           </div>
           <div className="mt-10 flex animate-fade-up flex-wrap gap-x-8 gap-y-3 text-sm text-ink/70" style={{ animationDelay: "320ms" }}>
-            <span className="flex items-center gap-2"><Truck className="h-4 w-4 text-matcha" /> Free shipping over $75</span>
+            <span className="flex items-center gap-2"><Truck className="h-4 w-4 text-matcha" /> Free shipping over ₹1,499</span>
             <span className="flex items-center gap-2"><Leaf className="h-4 w-4 text-matcha" /> Sustainably made</span>
           </div>
         </div>
@@ -124,43 +124,31 @@ function EditorialBanner() {
   );
 }
 
+function CollectionRow({ slug, eyebrow, title, to }) {
+  const { bySlug, loaded } = useStore();
+  const cat = bySlug(slug);
+  const { items, loading, error, reload } = useProducts({ category: cat?.id, per_page: 8 }, [cat?.id]);
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <SectionHeader eyebrow={eyebrow} title={title} action="View all" to={to} />
+      <ProductRow items={items} loading={loading || !loaded || !cat} error={error} onRetry={reload} emptyMsg="Assign products to this collection in WooCommerce and they'll show up here automatically." />
+    </section>
+  );
+}
+
 export default function Home() {
-  usePageMeta({ title: "Sojaru — Lifestyle goods for you & your best friend", description: "Sojaru is a modern lifestyle brand offering thoughtfully designed products for people and their pets. Shop clothing, drinkware, pet tags, dog shirts and more." });
-  const featured = useProducts({ featured: true, per_page: 8 }, []);
-  const newest = useProducts({ orderby: "date", order: "desc", per_page: 8 }, []);
-  const bestsellers = useProducts({ orderby: "popularity", per_page: 8 }, []);
-  const onsale = useProducts({ on_sale: true, per_page: 8 }, []);
+  usePageMeta({ title: "Sojaru — Lifestyle goods for you & your best friend", description: "Sojaru is a modern Indian lifestyle brand offering thoughtfully designed products for people and their pets. Shop clothing, drinkware, pet tags, dog shirts and more." });
 
   return (
     <>
       <Hero />
       <ShoppingWorlds />
-
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <SectionHeader eyebrow="Hand-picked" title="Featured" action="View all" to="/new-arrivals" />
-        <ProductRow items={featured.items} loading={featured.loading} error={featured.error} onRetry={featured.reload} emptyMsg="We're curating our featured picks." />
-      </section>
-
+      <CollectionRow slug="featured-collection" eyebrow="Hand-picked" title="Featured" to="/category/featured-collection" />
       <ShopByCategory />
-
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <SectionHeader eyebrow="Just landed" title="New Arrivals" action="View all" to="/new-arrivals" />
-        <ProductRow items={newest.items} loading={newest.loading} error={newest.error} onRetry={newest.reload} />
-      </section>
-
-      {(onsale.loading || onsale.items.length > 0) && (
-        <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <SectionHeader eyebrow="Limited time" title="On Sale" />
-          <ProductRow items={onsale.items} loading={onsale.loading} error={onsale.error} onRetry={onsale.reload} />
-        </section>
-      )}
-
+      <CollectionRow slug="new-arrivals" eyebrow="Just landed" title="New Arrivals" to="/category/new-arrivals" />
+      <CollectionRow slug="on-sale" eyebrow="Limited time" title="On Sale" to="/category/on-sale" />
       <EditorialBanner />
-
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <SectionHeader eyebrow="Crowd favourites" title="Best Sellers" />
-        <ProductRow items={bestsellers.items} loading={bestsellers.loading} error={bestsellers.error} onRetry={bestsellers.reload} emptyMsg="Best sellers appear as orders roll in." />
-      </section>
+      <CollectionRow slug="best-sellers" eyebrow="Crowd favourites" title="Best Sellers" to="/category/best-sellers" />
     </>
   );
 }

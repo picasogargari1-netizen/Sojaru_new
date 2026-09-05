@@ -35,7 +35,7 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
           <div className="lg:col-span-4">
-            <span className="font-display text-3xl font-semibold tracking-tight text-ink">Sojaru<span className="text-terracotta">.</span></span>
+            <img src="/sojaru-logo.png" alt="Sojaru" className="h-16 w-auto" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
               Lifestyle goods designed for you and your best friend. Thoughtfully made, joyfully worn — by both of you.
             </p>
@@ -68,7 +68,10 @@ export function Footer() {
             <Col title="Shop" links={[
               { to: "/shop/for-you", label: "For You" },
               { to: "/shop/for-your-pet", label: "For Your Pet" },
-              { to: "/new-arrivals", label: "New Arrivals" },
+              { to: "/category/new-arrivals", label: "New Arrivals" },
+              { to: "/category/featured-collection", label: "Featured" },
+              { to: "/category/on-sale", label: "On Sale" },
+              { to: "/category/best-sellers", label: "Best Sellers" },
               { to: "/category/gifting", label: "Gifting" },
             ]} />
             <Col title="For You" links={forYouSubs.map((c) => ({ to: `/category/${c.slug}`, label: c.name }))} />

@@ -97,9 +97,12 @@ export default function ProductPage() {
   if (!product) return <div className="mx-auto max-w-3xl px-4 py-24"><EmptyState title="Product not found" message="This product may have been unpublished." /></div>;
 
   const isVariable = product.type === "variable";
-  const onSale = matchedVariation ? matchedVariation.on_sale : product.on_sale;
-  const price = matchedVariation ? (onSale ? matchedVariation.sale_price : matchedVariation.regular_price) : (onSale ? product.sale_price : product.price);
-  const regPrice = matchedVariation ? matchedVariation.regular_price : product.regular_price;
+  const mv = matchedVariation;
+  const onSale = mv ? (mv.on_sale && Number(mv.sale_price) > 0) : (product.on_sale && Number(product.sale_price) > 0);
+  const price = mv ? (onSale ? mv.sale_price : mv.regular_price) : (onSale ? product.sale_price : product.price);
+  const showFrom = isVariable && !mv;
+  const displayPrice = showFrom ? product.price : price;
+  const regPrice = mv ? mv.regular_price : product.regular_price;
   const stockStatus = matchedVariation ? matchedVariation.stock_status : product.stock_status;
   const stockQty = matchedVariation ? matchedVariation.stock_quantity : product.stock_quantity;
   const outOfStock = stockStatus === "outofstock";
@@ -175,8 +178,9 @@ export default function ProductPage() {
           )}
 
           <div className="mt-4 flex items-center gap-3 font-mono">
-            <span className="text-2xl font-semibold text-ink" data-testid="pdp-price">{money(price)}</span>
-            {onSale && Number(regPrice) > Number(price) && (
+            {showFrom && <span className="text-sm font-sans font-medium text-muted-foreground">From</span>}
+            <span className="text-2xl font-semibold text-ink" data-testid="pdp-price">{money(displayPrice)}</span>
+            {!showFrom && onSale && Number(regPrice) > Number(price) && (
               <>
                 <span className="text-lg text-muted-foreground line-through">{money(regPrice)}</span>
                 <span className="rounded-full bg-terracotta/10 px-2.5 py-1 text-xs font-bold text-terracotta">Save {discountPct({ regular_price: regPrice, sale_price: price })}%</span>
@@ -238,7 +242,7 @@ export default function ProductPage() {
 
           {/* Trust icons */}
           <div className="mt-6 grid grid-cols-3 gap-3 rounded-2xl bg-oat/60 p-4 text-center text-xs text-ink/70">
-            <div className="flex flex-col items-center gap-1"><Truck className="h-5 w-5 text-matcha" /> Free ship $75+</div>
+            <div className="flex flex-col items-center gap-1"><Truck className="h-5 w-5 text-matcha" /> Free ship ₹1,499+</div>
             <div className="flex flex-col items-center gap-1"><RefreshCw className="h-5 w-5 text-matcha" /> 30-day returns</div>
             <div className="flex flex-col items-center gap-1"><Shield className="h-5 w-5 text-matcha" /> Secure checkout</div>
           </div>
@@ -255,7 +259,7 @@ export default function ProductPage() {
             <AccordionItem value="shipping">
               <AccordionTrigger data-testid="pdp-accordion-shipping" className="text-sm font-bold">Shipping</AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground">
-                Free standard shipping on orders over $75. Orders ship within 1–2 business days and arrive in 3–7 business days. You'll get tracking as soon as it's on the way.
+                Free standard shipping on orders over ₹1,499. Orders ship within 1–2 business days and arrive across India in 3–7 business days. You'll get tracking as soon as it's on the way.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="returns">

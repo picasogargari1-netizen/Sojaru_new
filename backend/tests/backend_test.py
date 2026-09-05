@@ -33,8 +33,36 @@ def test_store_config(s):
     r = s.get(f"{API}/store/config")
     assert r.status_code == 200
     d = r.json()
-    assert "currency_symbol" in d and "currency_code" in d
-    assert d["currency_symbol"]
+    assert d["currency_code"] == "INR", f"Expected INR, got {d.get('currency_code')}"
+    assert d["currency_symbol"] == "₹", f"Expected ₹, got {d.get('currency_symbol')!r}"
+
+
+@pytest.mark.parametrize("slug,expected_id", [
+    ("new-arrivals", 29),
+    ("featured-collection", 30),
+    ("on-sale", 31),
+    ("best-sellers", 32),
+])
+def test_group_categories_exist_and_have_products(s, slug, expected_id):
+    # Category exists in /api/categories
+    cats = s.get(f"{API}/categories").json()
+    cat = next((c for c in cats if c["slug"] == slug), None)
+    assert cat is not None, f"Category '{slug}' missing from /api/categories"
+    assert cat["id"] == expected_id, f"{slug} expected id {expected_id}, got {cat['id']}"
+    # Products endpoint filters by category id
+    r = s.get(f"{API}/products", params={"category": cat["id"], "per_page": 8})
+    assert r.status_code == 200
+    d = r.json()
+    assert d["total"] >= 1, f"No products in '{slug}' (id={cat['id']}) — homepage row will be empty"
+
+
+def test_product_prices_are_inr_range(s):
+    """After INR migration, product prices should look like INR (>= 99) not USD (<50)."""
+    r = s.get(f"{API}/products", params={"per_page": 20})
+    prices = [float(p["price"]) for p in r.json()["items"] if p.get("price")]
+    assert prices, "no priced products"
+    # Sanity: avg price should be well above typical USD values post-repricing
+    assert max(prices) >= 199, f"Max price {max(prices)} looks too low for INR"
 
 
 def test_categories(s):

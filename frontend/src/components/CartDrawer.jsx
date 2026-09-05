@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { useStore } from "@/context/StoreContext";
 
-const FREE_SHIP = 75;
+const FREE_SHIP = 1499;
 
 export function CartDrawer() {
   const { items, open, setOpen, removeItem, updateQty, subtotal, count } = useCart();

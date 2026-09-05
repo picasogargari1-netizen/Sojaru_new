@@ -80,7 +80,7 @@ function Profile() {
 function Addresses() {
   const { user, setUser } = useAuth();
   const b = user?.billing || {};
-  const [form, setForm] = useState({ address_1: b.address_1 || "", city: b.city || "", state: b.state || "", postcode: b.postcode || "", country: b.country || "US", phone: b.phone || "" });
+  const [form, setForm] = useState({ address_1: b.address_1 || "", city: b.city || "", state: b.state || "", postcode: b.postcode || "", country: b.country || "IN", phone: b.phone || "" });
   const [saving, setSaving] = useState(false);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const save = async () => {

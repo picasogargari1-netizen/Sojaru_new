@@ -10,7 +10,7 @@ import { IMAGES } from "@/lib/assets";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
 const FAQS = [
-  ["How long does shipping take?", "Orders ship within 1–2 business days and typically arrive in 3–7 business days. Free standard shipping on orders over $75."],
+  ["How long does shipping take?", "Orders ship within 1–2 business days and typically arrive across India in 3–7 business days. Free standard shipping on orders over ₹1,499."],
   ["Are your pet tags customisable?", "Yes! Our brass and enamel tags are engraved to order with your pet's name and your contact details. Add engraving notes at checkout."],
   ["What's your return policy?", "Return unworn items within 30 days for a full refund. Made-to-order engraved tags are non-returnable unless faulty."],
   ["Do the human and pet items really match?", "They do. Our Everyday Tee and Matchy Dog Tee are designed as a set, so you and your best friend can twin in style."],
@@ -61,7 +61,7 @@ const CONTENT = {
     title: "Shipping & Returns", eyebrow: "The details",
     render: () => (
       <div className="max-w-2xl space-y-6 text-muted-foreground">
-        <div><h3 className="font-display text-xl text-ink">Shipping</h3><p className="mt-2">We offer free standard shipping on all orders over $75. Orders under $75 ship at a flat $8. Orders are dispatched within 1–2 business days and delivered within 3–7 business days. Tracking is emailed as soon as your parcel is on its way.</p></div>
+        <div><h3 className="font-display text-xl text-ink">Shipping</h3><p className="mt-2">We offer free standard shipping on all orders over ₹1,499. Orders under ₹1,499 ship at a flat ₹99. Orders are dispatched within 1–2 business days and delivered across India within 3–7 business days. Tracking is emailed as soon as your parcel is on its way.</p></div>
         <div><h3 className="font-display text-xl text-ink">Returns</h3><p className="mt-2">If something isn't quite right, return unworn items in their original condition within 30 days for a full refund. Engraved pet tags are made to order and can only be returned if faulty. Start a return by contacting us with your order number.</p></div>
       </div>
     ),
@@ -101,7 +101,7 @@ function ContactForm() {
         <h3 className="font-display text-2xl text-ink">Reach the pack</h3>
         <p className="flex items-center gap-3 text-sm text-ink/80"><Mail className="h-5 w-5 text-terracotta" /> hello@sojaru.co.in</p>
         <p className="flex items-center gap-3 text-sm text-ink/80"><Instagram className="h-5 w-5 text-terracotta" /> @sojaru</p>
-        <p className="flex items-center gap-3 text-sm text-ink/80"><MapPin className="h-5 w-5 text-terracotta" /> Shipping worldwide</p>
+        <p className="flex items-center gap-3 text-sm text-ink/80"><MapPin className="h-5 w-5 text-terracotta" /> Shipping across India</p>
         <p className="text-sm text-muted-foreground">Whether it's a question about sizing, an engraving request, or you just want to share a photo of your best friend — we're all ears.</p>
       </div>
     </div>

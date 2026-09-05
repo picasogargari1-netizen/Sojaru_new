@@ -7,12 +7,13 @@ export const FOR_YOU_SLUG = "for-you";
 export const FOR_PET_SLUG = "for-your-pet";
 
 export function StoreProvider({ children }) {
-  const [symbol, setSymbol] = useState("$");
+  const [symbol, setSymbol] = useState("₹");
+  const [code, setCode] = useState("INR");
   const [categories, setCategories] = useState([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    store.config().then((c) => setSymbol(c.currency_symbol || "$")).catch(() => {});
+    store.config().then((c) => { setSymbol(c.currency_symbol || "₹"); setCode(c.currency_code || "INR"); }).catch(() => {});
     store.categories()
       .then((c) => setCategories(c))
       .catch(() => {})
@@ -21,7 +22,15 @@ export function StoreProvider({ children }) {
 
   const money = (val) => {
     const n = Number(val || 0);
-    return `${symbol}${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const decimals = code === "INR" || code === "JPY" ? 0 : 2;
+    try {
+      return new Intl.NumberFormat(code === "INR" ? "en-IN" : "en-US", {
+        style: "currency", currency: code,
+        minimumFractionDigits: decimals, maximumFractionDigits: decimals,
+      }).format(n);
+    } catch {
+      return `${symbol}${n.toLocaleString("en-IN", { maximumFractionDigits: decimals })}`;
+    }
   };
 
   const parents = categories.filter((c) => c.parent === 0);

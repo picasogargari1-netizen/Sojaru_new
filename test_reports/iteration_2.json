@@ -1,0 +1,41 @@
+{
+  "summary": "Iteration 2 focused on the INR migration, Sojaru logo, and 4 new homepage collection categories (New Arrivals, Featured, On Sale, Best Sellers). Backend: 25/25 pytest tests pass (added parametrized tests for the 4 category slugs/ids 29-32 with product presence, an explicit INR+₹ assertion on /api/store/config, and an INR price-range sanity check). Frontend: home renders header logo (/sojaru-logo.png, natural 659px), footer logo, prices in ₹ with Indian grouping (e.g. ₹1,499, ₹1,099, ₹2,999), NO $ anywhere, all four collection rows populated (32 product cards on home), 'New Arrivals' nav routes to /category/new-arrivals and shows products, PDP variation selection updates ₹ price, Add to Bag adds item, cart drawer shows ₹1,499 free-ship reference, /checkout country defaults to India, shipping = ₹99 (subtotal ₹999 < ₹1,499 threshold), order placed successfully with 'Complete Payment Securely' confirmation.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/store/config", "issue": "Fallback returns USD/$ if WooCommerce data/currencies/current is unreachable — could silently mask a store misconfig in prod."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "PDP initial price", "issue": "Before size/color selection the price shows ₹0 (empty variation price). Consider showing the price range 'From ₹999' or the parent product price until a variation is picked.", "selector": "[data-testid=\"pdp-price\"]", "priority": "LOW"}
+    ],
+    "integration_issues": [
+      {"flow": "Checkout → Order confirmation total mismatch", "issue": "Checkout summary shows Subtotal ₹999 + Shipping ₹99 = Total ₹1,098, but the Woo-created order (and confirmation page 'Order total') is ₹999. The frontend does not send shipping_lines in the /api/orders payload, so WooCommerce records the order without the ₹99 shipping fee. User is charged the wrong amount if they trust the confirmation number.", "affected_selectors": ["/api/orders payload", "OrderConfirmation total"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Send shipping_lines (method_id='flat_rate' or 'free_shipping', total='99.00' or '0.00' based on threshold) in POST /api/orders so the WC order total matches what the customer saw at checkout. Otherwise the ₹99 shipping is silently dropped.",
+    "PDP: display 'From ₹<min>' or product base price instead of ₹0 before a variation is selected."
+  ],
+  "critical_code_review_comments": [
+    "CheckoutPage.jsx computes shipping client-side (free>=1499 else 99) but the /api/orders body only carries line_items + billing + shipping address; no coupon_lines/shipping_lines. server.py forwards this to WC as-is, so Woo will re-compute totals (likely 0 shipping since no shipping method is passed) — leading to the ₹999 vs ₹1,098 mismatch observed on order confirmation.",
+    "server.py /api/store/config silently falls back to USD/$ on WC failure — with the app now hard-committed to INR this fallback is misleading. Prefer raising 502 or defaulting to INR/₹.",
+    "server.py still 456 lines and no retries on wc_request; noted in iteration 1, still true."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "95%"},
+  "test_credentials": "Register-on-demand pattern: testpup_<uuid6>@sojaru.co.in / sojaru123. Real WC customers + one COD order (WC order #62, total ₹999) created during this run per problem statement acceptance.",
+  "seed_data_creation": "1 real WooCommerce customer + 1 real (pending, COD) order #62 created against live store.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend suite: /app/backend/tests/backend_test.py (25 tests, all passing). Category IDs are hard-coded (new-arrivals=29, featured-collection=30, on-sale=31, best-sellers=32) — update if the WC admin regenerates them. Known open bug from this iteration: /checkout shows total ₹1,098 (₹999 + ₹99 shipping) but the Woo order/confirmation shows ₹999 because /api/orders payload omits shipping_lines. To test after the fix: place an order with subtotal < ₹1,499 and confirm the confirmation-page 'Order total' equals checkout total; also test free-shipping path with subtotal >= ₹1,499 and confirm shipping = ₹0 both on checkout summary and Woo order.",
+  "rca of the issue": "Root cause of the ₹99 shipping mismatch: /app/frontend/src/pages/CheckoutPage.jsx builds the /api/orders body from cart line items + billing/shipping addresses only. It never adds a shipping_lines entry. server.py::create_order() forwards this unchanged to POST /wp-json/wc/v3/orders. Because Woo receives no shipping method, it stores the order with 0 shipping — total = subtotal (₹999). The confirmation page reads the total back from the freshly-created Woo order, so the user sees ₹999 despite having reviewed ₹1,098 at checkout. Fix: in CheckoutPage before calling api.orders.create, compute shippingCents based on subtotal>=1499 and push shipping_lines: [{method_id: subtotal>=1499?'free_shipping':'flat_rate', method_title: subtotal>=1499?'Free shipping':'Flat rate', total: subtotal>=1499?'0.00':'99.00'}]. No backend change strictly required (OrderIn already tolerates extra keys via body.model_dump), but ideally add shipping_lines field to OrderIn for type-safety."
+}
