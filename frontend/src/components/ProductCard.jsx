@@ -48,12 +48,12 @@ export function ProductCard({ product, index = 0 }) {
 
         <div className="absolute left-3 top-3 flex flex-col gap-1.5">
           {onSale && (
-            <span className="rounded-full bg-terracotta px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-white">
+            <span className="rounded-full bg-yellow px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-ink">
               {pct ? `-${pct}%` : "Sale"}
             </span>
           )}
           {isNew(product) && (
-            <span className="rounded-full bg-ink px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-cream">
+            <span className="rounded-full bg-ink px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-white">
               New
             </span>
           )}

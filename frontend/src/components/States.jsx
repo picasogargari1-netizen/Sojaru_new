@@ -49,13 +49,17 @@ export function SectionHeader({ eyebrow, title, action, to }) {
   return (
     <div className="mb-8 flex items-end justify-between gap-4">
       <div>
-        {eyebrow && <div className="eyebrow text-terracotta">{eyebrow}</div>}
-        <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+        {eyebrow && (
+          <div className="mb-3 inline-block bg-yellow px-2.5 py-1 text-[0.7rem] font-bold uppercase tracking-[0.18em] text-ink">
+            {eyebrow}
+          </div>
+        )}
+        <h2 className="font-display text-4xl font-extrabold uppercase tracking-tight text-ink sm:text-5xl">
           {title}
         </h2>
       </div>
       {action && to && (
-        <Link to={to} className="hidden shrink-0 items-center gap-1 border-b border-ink pb-0.5 text-sm font-semibold text-ink transition-colors hover:text-terracotta hover:border-terracotta sm:flex">
+        <Link to={to} className="hidden shrink-0 items-center gap-1 border-2 border-ink px-4 py-2 text-sm font-bold text-ink transition-colors hover:bg-yellow sm:flex">
           {action}
         </Link>
       )}
