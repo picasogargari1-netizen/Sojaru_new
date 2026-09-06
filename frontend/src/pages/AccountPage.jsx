@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Loader2, Package, User as UserIcon, MapPin, LogOut, PawPrint } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Loader2, Package, User as UserIcon, MapPin, LogOut, PawPrint, LayoutDashboard } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { auth as authApi, apiErr } from "@/lib/api";
@@ -118,7 +118,14 @@ export default function AccountPage() {
           <p className="eyebrow text-terracotta">My Account</p>
           <h1 className="mt-2 font-display text-4xl font-semibold text-ink">Hi, {user.first_name || "friend"} <PawPrint className="inline h-7 w-7 text-terracotta" /></h1>
         </div>
-        <Button onClick={() => { logout(); navigate("/"); }} variant="outline" className="rounded-full border-ink" data-testid="logout-button"><LogOut className="mr-2 h-4 w-4" /> Log out</Button>
+        <div className="flex items-center gap-3">
+          {user.is_admin && (
+            <Button asChild className="rounded-full bg-ink font-bold text-cream hover:bg-terracotta" data-testid="account-admin-link">
+              <Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /> Storefront Manager</Link>
+            </Button>
+          )}
+          <Button onClick={() => { logout(); navigate("/"); }} variant="outline" className="rounded-full border-ink" data-testid="logout-button"><LogOut className="mr-2 h-4 w-4" /> Log out</Button>
+        </div>
       </div>
 
       <Tabs defaultValue="orders" className="mt-8">

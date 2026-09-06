@@ -167,9 +167,23 @@ backend:
         -comment: "✅ ALL HERO IMAGE TESTS PASSED (6/6): POST /api/admin/hero-images successfully uploads images and increments count. Uploaded images retrievable via GET /api/media/{path} with correct content-type (image/png). Max-5 limit correctly enforced - 6th upload returns 400 with message 'You can have a maximum of 5 hero images. Delete one first.' DELETE /api/admin/hero-images/{id} successfully removes images. Cleanup verified - final count matches original. Emergent object storage working perfectly."
 
 frontend:
+  - task: "Admin dashboard entry point visible to admins (Header + Account page)"
+    implemented: true
+    working: true
+    file: "frontend/src/components/Header.jsx, frontend/src/pages/AccountPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "BUG REPORTED BY USER: after logging in with hello@sojaru.co.in the admin saw no way to reach the dashboard / hero-banner controls. Root cause: there was NO link to /admin anywhere in the UI (only the routes existed). FIX: (1) Header now shows a LayoutDashboard icon link to /admin when user.is_admin (data-testid='header-admin-button'). (2) Account page shows a 'Storefront Manager' button linking to /admin when user.is_admin (data-testid='account-admin-link'). Needs UI verification."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ ALL ADMIN ENTRY POINT TESTS PASSED (3/3): (1) Admin login successful with hello@sojaru.co.in redirects to /account. (2) Header admin button (data-testid='header-admin-button') is VISIBLE when logged in as admin and successfully navigates to /admin. (3) Account page 'Storefront Manager' button (data-testid='account-admin-link') is VISIBLE and successfully navigates to /admin. (4) Non-admin user verification: registered new user testuser_1788656699@example.com - header admin button and account admin link are NOT present for non-admin users. Bug fix verified and working correctly."
   - task: "Admin dashboard managers (Hero/Marquee/Festive) UI"
     implemented: true
-    working: "NA"
+    working: true
     file: "frontend/src/pages/AdminDashboard.jsx"
     stuck_count: 0
     priority: "medium"
@@ -177,20 +191,19 @@ frontend:
     status_history:
         -working: "NA"
         -agent: "main"
-        -comment: "Already implemented. Not testing frontend yet — awaiting user permission."
+        -comment: "Festive tab category dropdown removed; only title + enable toggle remain (category locked to festive-collections on backend). Verify Hero/Marquee/Festive tabs all render and function."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ ALL ADMIN DASHBOARD TAB TESTS PASSED (3/3): (1) Hero Banner tab (data-testid='admin-tab-hero'): upload button (data-testid='hero-upload-btn') visible, count display shows '0/5', successfully uploaded and deleted test image (count 0→1→0). (2) Moving Text tab (data-testid='admin-tab-marquee'): marquee text inputs visible with 5 entries, Save button (data-testid='marquee-save') visible. (3) Festive Collection tab (data-testid='admin-tab-festive'): title input (data-testid='festive-title-input') visible, enable toggle (data-testid='festive-enabled') exists, VERIFIED NO category dropdown (data-testid='festive-category-select') exists as expected. All tabs functional."
 
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 1
-  run_ui: false
+  test_sequence: 3
+  run_ui: true
 
 test_plan:
-  current_focus:
-    - "Hero banner upload/delete (Emergent object storage) max 5"
-    - "Marquee texts update via PUT /api/admin/settings"
-    - "Festive collection update via PUT /api/admin/settings"
-    - "Admin auth (login) and admin-guarded endpoints"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -198,6 +211,9 @@ test_plan:
 agent_communication:
     -agent: "main"
     -message: |
+      USER BUG: admin logged in but saw no option to add hero banners / access admin features. Root cause: no visible link to /admin existed. Fix adds an admin entry point in the Header (icon) and on the Account page (button), both gated by user.is_admin.
+      Please FRONTEND-test this flow: (1) Log in at /login with admin creds from /app/memory/test_credentials.md (hello@sojaru.co.in / admin123). (2) After login, confirm the Header shows the admin dashboard icon (data-testid='header-admin-button') and clicking it navigates to /admin. (3) On /account confirm the 'Storefront Manager' button (data-testid='account-admin-link') appears and navigates to /admin. (4) On /admin confirm all three tabs work: Hero Banner (upload area '+' visible, count X/5), Moving Text (marquee inputs + Save), Festive Collection (title input + toggle, NO category dropdown). (5) Log in as a NON-admin user (register a fresh account) and confirm the admin icon/button do NOT appear. Do a real hero image upload with a tiny image then delete it so no leftover images remain.
+
       App restored with user's own MongoDB Atlas (DB 'Sojaru') and live WooCommerce. Admin creds in /app/memory/test_credentials.md.
       Please test ONLY the backend admin flows: (1) admin login, (2) PUT /api/admin/settings for marquee_texts and festive, (3) POST/DELETE /api/admin/hero-images including the max-5 limit and that the uploaded image is retrievable via /api/media/{path}, and (4) that /api/admin/* rejects non-admin/unauthenticated requests. Use a tiny generated PNG for the upload test and clean up any test image you create so no more than the pre-existing hero images remain.
     -agent: "testing"
@@ -213,3 +229,49 @@ agent_communication:
       4. HERO IMAGES (6/6 passed): POST /api/admin/hero-images uploads successfully. Images retrievable via GET /api/media/{path} with correct content-type. Max-5 limit enforced with clear error message. DELETE /api/admin/hero-images/{id} removes images. All test images cleaned up. Emergent object storage integration working perfectly.
       
       No issues found. All backend admin functionality verified and working correctly.
+    -agent: "testing"
+    -message: |
+      ✅ FRONTEND TESTING COMPLETE - ALL 6 TEST SCENARIOS PASSED
+      
+      BUG FIX VERIFICATION: Admin dashboard entry points are now working correctly.
+      
+      TEST 1 - Admin Login: ✅ PASSED
+      - Successfully logged in with hello@sojaru.co.in / admin123
+      - Redirected to /account page after login
+      
+      TEST 2 - Header Admin Button: ✅ PASSED
+      - Header admin button (data-testid="header-admin-button") is VISIBLE when logged in as admin
+      - Clicking the button successfully navigates to /admin
+      - Admin dashboard "STOREFRONT MANAGER" page renders correctly
+      
+      TEST 3 - Account Page Admin Link: ✅ PASSED
+      - Account admin link (data-testid="account-admin-link") is VISIBLE with text "Storefront Manager"
+      - Clicking the link successfully navigates to /admin
+      
+      TEST 4a - Hero Banner Tab: ✅ PASSED
+      - Hero Banner tab (data-testid="admin-tab-hero") exists and is clickable
+      - Upload button (data-testid="hero-upload-btn") is visible
+      - Count display shows "0/5" correctly
+      
+      TEST 4b - Moving Text Tab: ✅ PASSED
+      - Moving Text tab (data-testid="admin-tab-marquee") exists and is clickable
+      - Marquee text inputs are visible (5 entries)
+      - Save button (data-testid="marquee-save") is visible
+      
+      TEST 4c - Festive Collection Tab: ✅ PASSED
+      - Festive Collection tab (data-testid="admin-tab-festive") exists and is clickable
+      - Title input (data-testid="festive-title-input") is visible
+      - Enable toggle (data-testid="festive-enabled") exists
+      - ✅ VERIFIED: NO category dropdown (data-testid="festive-category-select") exists - as expected
+      
+      TEST 5 - Hero Image Upload/Delete: ✅ PASSED
+      - Successfully uploaded test image (count increased from 0 to 1)
+      - Successfully deleted test image (count restored to 0)
+      - No leftover images remain
+      
+      TEST 6 - Non-Admin User Verification: ✅ PASSED
+      - Successfully logged out and registered new non-admin user (testuser_1788656699@example.com)
+      - Header admin button (data-testid="header-admin-button") is NOT present for non-admin user
+      - Account admin link (data-testid="account-admin-link") is NOT present for non-admin user
+      
+      CONCLUSION: The bug fix is working perfectly. Admin users can now access the admin dashboard via the header icon and account page button. Non-admin users do not see these controls. All admin dashboard tabs are functional.

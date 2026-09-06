@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, User, ShoppingBag, Menu, ChevronRight, PawPrint, X } from "lucide-react";
+import { Search, User, ShoppingBag, Menu, ChevronRight, PawPrint, X, LayoutDashboard } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -124,6 +124,11 @@ export function Header() {
             <button data-testid="header-search-button" aria-label="Search" onClick={() => setSearchOpen(true)} className="rounded-full p-2 text-ink transition-colors hover:bg-oat">
               <Search className="h-[1.15rem] w-[1.15rem]" />
             </button>
+            {user?.is_admin && (
+              <Link to="/admin" data-testid="header-admin-button" aria-label="Admin dashboard" title="Storefront Manager" className="rounded-full p-2 text-ink transition-colors hover:bg-yellow">
+                <LayoutDashboard className="h-[1.15rem] w-[1.15rem]" />
+              </Link>
+            )}
             <Link to={user ? "/account" : "/login"} data-testid="header-account-button" aria-label="Account" className="rounded-full p-2 text-ink transition-colors hover:bg-oat">
               <User className="h-[1.15rem] w-[1.15rem]" />
             </Link>
