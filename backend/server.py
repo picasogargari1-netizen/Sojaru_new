@@ -211,13 +211,44 @@ async def get_settings_doc() -> dict:
         await db.settings.insert_one(doc)
     return doc
 
+# The festive card is permanently tied to this WooCommerce category. The admin
+# can change only the card's title and whether it shows — never the category.
+FESTIVE_SLUG = "festive-collections"
+FESTIVE_FALLBACK_ID = 33
+
+async def resolve_festive_category_id() -> int:
+    cached = cache_get("festive_cat_id")
+    if cached:
+        return cached
+    cid = FESTIVE_FALLBACK_ID
+    try:
+        r = await wc_request("GET", "products/categories", params={"slug": FESTIVE_SLUG})
+        arr = r.json()
+        if arr:
+            cid = arr[0]["id"]
+    except Exception as e:
+        logger.error(f"Festive category resolve failed: {e}")
+    cache_set("festive_cat_id", cid, 3600)
+    return cid
+
 def public_settings(doc: dict) -> dict:
+    festive = doc.get("festive") or {}
     return {
         "hero_images": [{"id": h["id"], "url": f"/api/media/{h['storage_path']}", "alt": h.get("alt", "Sojaru")}
                         for h in doc.get("hero_images", [])],
         "marquee_texts": doc.get("marquee_texts", DEFAULT_MARQUEE),
-        "festive": doc.get("festive", {"title": "Festive Collection", "category_id": 33, "enabled": True}),
+        "festive": {
+            "title": festive.get("title", "Festive Collection"),
+            "category_id": festive.get("category_id", FESTIVE_FALLBACK_ID),
+            "category_slug": FESTIVE_SLUG,
+            "enabled": festive.get("enabled", True),
+        },
     }
+
+async def public_settings_resolved(doc: dict) -> dict:
+    data = public_settings(doc)
+    data["festive"]["category_id"] = await resolve_festive_category_id()
+    return data
 
 
 # ---------------------------------------------------------------------------
@@ -520,7 +551,7 @@ class SettingsUpdate(BaseModel):
 @api.get("/settings")
 async def get_settings():
     doc = await get_settings_doc()
-    return public_settings(doc)
+    return await public_settings_resolved(doc)
 
 
 @api.get("/media/{path:path}")
@@ -540,15 +571,17 @@ async def admin_update_settings(body: SettingsUpdate, admin: dict = Depends(get_
         updates["marquee_texts"] = [t.strip() for t in body.marquee_texts if t and t.strip()]
     if body.festive is not None:
         f = body.festive
+        # Category is permanently locked to the "festive-collections" WooCommerce
+        # category; only the title and visibility are admin-editable.
         updates["festive"] = {
             "title": (f.get("title") or "Festive Collection").strip(),
-            "category_id": int(f["category_id"]) if f.get("category_id") else None,
+            "category_id": await resolve_festive_category_id(),
             "enabled": bool(f.get("enabled", True)),
         }
     if updates:
         await db.settings.update_one({"_id": "site"}, {"$set": updates}, upsert=True)
     doc = await get_settings_doc()
-    return public_settings(doc)
+    return await public_settings_resolved(doc)
 
 
 @api.post("/admin/hero-images")

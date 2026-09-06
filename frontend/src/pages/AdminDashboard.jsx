@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
@@ -103,13 +102,12 @@ function MarqueeManager() {
 }
 
 function FestiveManager() {
-  const { settings, reloadSettings, categories } = useStore();
-  const [festive, setFestive] = useState({ title: "", category_id: "", enabled: true });
+  const { settings, reloadSettings } = useStore();
+  const [festive, setFestive] = useState({ title: "", enabled: true });
   const [saving, setSaving] = useState(false);
   useEffect(() => {
     if (settings?.festive) setFestive({
       title: settings.festive.title || "",
-      category_id: settings.festive.category_id ? String(settings.festive.category_id) : "",
       enabled: settings.festive.enabled !== false,
     });
   }, [settings]);
@@ -117,7 +115,7 @@ function FestiveManager() {
   const save = async () => {
     setSaving(true);
     try {
-      await admin.updateSettings({ festive: { title: festive.title, category_id: festive.category_id ? Number(festive.category_id) : null, enabled: festive.enabled } });
+      await admin.updateSettings({ festive: { title: festive.title, enabled: festive.enabled } });
       await reloadSettings();
       toast.success("Festive collection updated");
     } catch (err) { toast.error(apiErr(err)); } finally { setSaving(false); }
@@ -125,21 +123,10 @@ function FestiveManager() {
 
   return (
     <div className="max-w-lg space-y-5">
-      <p className="text-sm text-muted-foreground">A single highlighted collection card shown below the hero banner. Change its title and the WooCommerce category it pulls products from, any time.</p>
+      <p className="text-sm text-muted-foreground">A single highlighted collection card shown below the hero banner. Its products always come from your WooCommerce <span className="font-bold text-ink">{'"Festive Collections"'}</span> category — tag products to that category in WooCommerce to feature them here. You can rename the card title any time.</p>
       <div>
         <Label>Card title</Label>
         <Input value={festive.title} onChange={(e) => setFestive({ ...festive, title: e.target.value })} placeholder="e.g. Diwali Edit, Holiday Gifting" className="mt-1.5 rounded-none border-2 border-ink bg-cream" data-testid="festive-title-input" />
-      </div>
-      <div>
-        <Label>Products from category</Label>
-        <Select value={festive.category_id} onValueChange={(v) => setFestive({ ...festive, category_id: v })}>
-          <SelectTrigger className="mt-1.5 rounded-none border-2 border-ink bg-cream" data-testid="festive-category-select"><SelectValue placeholder="Choose a category" /></SelectTrigger>
-          <SelectContent>
-            {categories.filter((c) => c.slug !== "uncategorized").map((c) => (
-              <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
       <label className="flex items-center justify-between border-2 border-ink bg-cream px-4 py-3">
         <span className="text-sm font-bold text-ink">Show this collection on the homepage</span>
