@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, PawPrint, Asterisk } from "lucide-react";
+import { ArrowRight, PawPrint } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/context/StoreContext";
 import { useProducts } from "@/hooks/useProducts";
@@ -12,6 +12,7 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 
 function Hero() {
   const { settings } = useStore();
+  const hero = settings?.hero || {};
   const heroImages = settings?.hero_images?.length
     ? settings.hero_images.map((h) => ({ src: mediaUrl(h.url), alt: h.alt }))
     : [{ src: IMAGES.hero, alt: "A woman relaxing with her golden retriever, both in cozy Sojaru knits" }];
@@ -38,18 +39,15 @@ function Hero() {
           <div className="inline-flex animate-fade-up items-center gap-2 bg-yellow px-3 py-1.5 text-xs font-bold uppercase tracking-[0.15em] text-ink">
             <PawPrint className="h-4 w-4" /> Lifestyle for people & pets
           </div>
-          <h1 className="mt-5 animate-fade-up font-display text-5xl font-extrabold uppercase leading-[0.9] tracking-tighter text-cream sm:text-6xl lg:text-7xl" style={{ animationDelay: "80ms" }}>
-            For you<br />& your<br /><span className="mt-1 inline-block bg-yellow px-2 text-ink">best friend</span>
+          <h1 className="mt-5 max-w-md animate-fade-up font-display text-3xl font-extrabold uppercase leading-tight tracking-tight text-cream sm:text-4xl" style={{ animationDelay: "80ms" }}>
+            {hero.subtitle || "Boldly designed everyday goods — for the humans who love hard and the pets who love harder. Made in India, for both of you."}
           </h1>
-          <p className="mt-6 max-w-md animate-fade-up text-base font-medium leading-relaxed text-cream/85 sm:text-lg" style={{ animationDelay: "160ms" }}>
-            Boldly designed everyday goods — for the humans who love hard and the pets who love harder. Made in India, for both of you.
-          </p>
           <div className="mt-8 flex animate-fade-up flex-wrap gap-3" style={{ animationDelay: "240ms" }}>
             <Button asChild className="h-12 rounded-none bg-yellow px-8 text-base font-bold uppercase text-ink transition-all hover:-translate-y-1 hover:bg-cream">
-              <Link to="/shop/for-you" data-testid="hero-shop-for-you-btn">Shop Now <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link to={hero.primary_link || "/shop/for-you"} data-testid="hero-shop-for-you-btn">{hero.primary_label || "Shop Now"} <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button asChild variant="outline" className="h-12 rounded-none border-2 border-cream bg-transparent px-8 text-base font-bold uppercase text-cream transition-all hover:-translate-y-1 hover:bg-cream hover:text-ink">
-              <Link to="/shop/for-your-pet" data-testid="hero-shop-for-pet-btn"><PawPrint className="mr-2 h-4 w-4" /> Shop For Your Pet</Link>
+              <Link to={hero.secondary_link || "/shop/for-your-pet"} data-testid="hero-shop-for-pet-btn"><PawPrint className="mr-2 h-4 w-4" /> {hero.secondary_label || "Shop For Your Pet"}</Link>
             </Button>
           </div>
         </div>
@@ -91,21 +89,6 @@ function FestiveSection() {
         <ProductRow items={items} loading={loading} error={error} onRetry={reload} emptyMsg="Assign products to your Festive Collections category in WooCommerce." />
       </div>
     </section>
-  );
-}
-
-function MarqueeBand() {
-  const items = ["For you & your best friend", "Made in India", "New Arrivals", "Free shipping over ₹1,499", "Engraved with love", "Shop the drop"];
-  return (
-    <div className="overflow-hidden border-y-4 border-ink bg-yellow py-3">
-      <div className="flex animate-marquee whitespace-nowrap">
-        {[...items, ...items, ...items].map((t, i) => (
-          <span key={i} className="mx-5 flex items-center gap-4 font-display text-lg font-extrabold uppercase tracking-tight text-ink sm:text-xl">
-            {t} <Asterisk className="h-5 w-5" strokeWidth={3} />
-          </span>
-        ))}
-      </div>
-    </div>
   );
 }
 
@@ -197,7 +180,6 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <MarqueeBand />
       <FestiveSection />
       <ShoppingWorlds />
       <CollectionRow slug="featured-collection" eyebrow="Hand-picked" title="Featured" to="/category/featured-collection" />

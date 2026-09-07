@@ -109,6 +109,20 @@ user_problem_statement: |
   3) Add/update/delete up to 5 hero banner images; only existing images are shown on the homepage.
 
 backend:
+  - task: "Configurable hero text (subtitle + 2 CTA buttons) via settings"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Added a 'hero' block to settings: subtitle, primary_label, primary_link, secondary_label, secondary_link. GET /api/settings returns hero (with defaults). PUT /api/admin/settings accepts {\"hero\": {...}} and persists sanitized values (empty strings fall back to defaults). Verify update + read-back with admin token, and that /api/admin/settings still rejects non-admin."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ ALL HERO TEXT TESTS PASSED (14/14): (1) GET /api/settings returns 200 with hero object containing all required keys (subtitle, primary_label, primary_link, secondary_label, secondary_link). (2) Admin login successful with is_admin=true. PUT /api/admin/settings with hero data returns 200. GET /api/settings confirms hero values match exactly what was set. (3) Empty-string fallback: PUT with empty/whitespace fields (subtitle='   ', primary_label='') returns 200, and GET confirms fields correctly fell back to default values (subtitle='Boldly designed everyday goods...', primary_label='Shop Now'). (4) Authorization: PUT /api/admin/settings correctly rejected with no token (401) and with non-admin token (403). (5) Regression sanity: GET /api/categories returned 17 categories, GET /api/products?per_page=3 returned 3 items. (6) Cleanup: original hero values restored and verified. Hero text configuration working perfectly."
   - task: "Admin auth (login) and admin-guarded endpoints"
     implemented: true
     working: true
@@ -167,6 +181,20 @@ backend:
         -comment: "✅ ALL HERO IMAGE TESTS PASSED (6/6): POST /api/admin/hero-images successfully uploads images and increments count. Uploaded images retrievable via GET /api/media/{path} with correct content-type (image/png). Max-5 limit correctly enforced - 6th upload returns 400 with message 'You can have a maximum of 5 hero images. Delete one first.' DELETE /api/admin/hero-images/{id} successfully removes images. Cleanup verified - final count matches original. Emergent object storage working perfectly."
 
 frontend:
+  - task: "Homepage hero configurable text + removed h1 + removed rolling band"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/Home.jsx, frontend/src/pages/AdminDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "User requested: (a) remove the big hero h1 'For you & your best friend'; (b) keep the subtitle but make it admin-configurable; (c) make both hero CTA button texts admin-configurable; (d) remove the rolling marquee band that was directly below the hero banner (the yellow MarqueeBand, NOT the header announcement bar). New admin tab 'Hero Text' (data-testid='admin-tab-herotext') edits subtitle + both button label/link. Needs UI verification that changes reflect on homepage and old elements are gone."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ ALL HERO VISUAL & ADMIN TESTS PASSED (10/10): A) STOREFRONT DATA: (1) Homepage displays 40 product cards across Featured, New Arrivals, Best Sellers sections. (2) Shop by Category section shows 10 category tiles. (3) Category page /category/new-arrivals displays 5 products. B) HERO VISUAL CHANGES: (4) Old h1 'For you & your best friend' is NOT present in hero section (correctly removed). (5) Hero subtitle displays default text 'BOLDLY DESIGNED EVERYDAY GOODS — FOR THE HUMANS WHO LOVE HARD AND THE PETS WHO LOVE HARDER. MADE IN INDIA, FOR BOTH OF YOU.' (6) Two CTA buttons present with data-testids hero-shop-for-you-btn ('SHOP NOW') and hero-shop-for-pet-btn ('SHOP FOR YOUR PET'). (7) Yellow rolling marquee band below hero is NOT present (correctly removed). (8) Announcement bar above header still exists (correct). C) ADMIN HERO TEXT EDITING: (9) Admin Hero Text tab (data-testid='admin-tab-herotext') contains all required fields: subtitle input, primary button text/link, secondary button text/link, Save button. (10) Successfully changed subtitle to 'Verify Hero Config 123' and primary button to 'GET YOURS', verified changes on homepage, and restored original values. All hero changes working perfectly. NOTE: Backend logs show intermittent WooCommerce connection errors (502: Unable to reach store), but products/categories are displaying correctly (likely cached data)."
   - task: "Admin dashboard entry point visible to admins (Header + Account page)"
     implemented: true
     working: true
@@ -275,3 +303,64 @@ agent_communication:
       - Account admin link (data-testid="account-admin-link") is NOT present for non-admin user
       
       CONCLUSION: The bug fix is working perfectly. Admin users can now access the admin dashboard via the header icon and account page button. Non-admin users do not see these controls. All admin dashboard tabs are functional.
+    -agent: "testing"
+    -message: |
+      ✅ HERO TEXT SETTINGS TESTING COMPLETE - ALL 14 TESTS PASSED
+      
+      Tested the new configurable HERO TEXT settings (subtitle + 2 CTA buttons) on the Sojaru backend as requested.
+      
+      STEP 1 - GET /api/settings (2/2 passed):
+      - Returns 200 with hero object containing all required keys: subtitle, primary_label, primary_link, secondary_label, secondary_link
+      - Original hero values captured for restoration
+      
+      STEP 2 - Admin Update Hero Settings (3/3 passed):
+      - Admin login successful with is_admin=true
+      - PUT /api/admin/settings with hero data {"subtitle": "Test tagline here", "primary_label": "Buy Now", "primary_link": "/shop/for-you", "secondary_label": "For Pets", "secondary_link": "/shop/for-your-pet"} returned 200
+      - GET /api/settings confirmed hero values match exactly what was set
+      
+      STEP 3 - Empty-String Fallback (2/2 passed):
+      - PUT /api/admin/settings with {"hero": {"subtitle": "   ", "primary_label": ""}} returned 200
+      - GET /api/settings confirmed blank fields correctly fell back to default values (subtitle="Boldly designed everyday goods...", primary_label="Shop Now")
+      
+      STEP 4 - Authorization (3/3 passed):
+      - PUT /api/admin/settings correctly rejected with no token (401)
+      - Normal user registered successfully (is_admin=false)
+      - PUT /api/admin/settings correctly rejected with non-admin token (403)
+      
+      STEP 5 - Regression Sanity (2/2 passed):
+      - GET /api/categories returned 200 with 17 categories
+      - GET /api/products?per_page=3 returned 200 with 3 items
+      
+      STEP 6 - Cleanup (2/2 passed):
+      - Original hero values restored successfully
+    -agent: "testing"
+    -message: |
+      ✅ HERO VISUAL CHANGES & ADMIN HERO TEXT TESTING COMPLETE - ALL 10 TESTS PASSED
+      
+      Verified homepage hero changes and admin Hero Text configuration as requested.
+      
+      A) STOREFRONT DATA (3/3 passed):
+      - Homepage displays 40 product cards across Featured, New Arrivals, and Best Sellers sections
+      - Shop by Category section shows 10 category tiles
+      - Category page /category/new-arrivals displays 5 products
+      - Products and categories are displaying correctly
+      
+      B) HERO VISUAL CHANGES (4/4 passed):
+      - ✅ Old h1 "For you & your best friend" is NOT present in hero section (correctly removed)
+      - ✅ Hero subtitle displays configurable text: "BOLDLY DESIGNED EVERYDAY GOODS — FOR THE HUMANS WHO LOVE HARD AND THE PETS WHO LOVE HARDER. MADE IN INDIA, FOR BOTH OF YOU."
+      - ✅ Two CTA buttons present: primary (data-testid="hero-shop-for-you-btn") shows "SHOP NOW", secondary (data-testid="hero-shop-for-pet-btn") shows "SHOP FOR YOUR PET"
+      - ✅ Yellow rolling marquee band below hero is NOT present (correctly removed)
+      - ✅ Announcement bar above header still exists (correct - this should remain)
+      
+      C) ADMIN HERO TEXT EDITING (3/3 passed):
+      - ✅ Admin Hero Text tab (data-testid="admin-tab-herotext") accessible and contains all required fields: subtitle textarea, primary button text/link inputs, secondary button text/link inputs, Save button
+      - ✅ Successfully changed subtitle to "Verify Hero Config 123" and primary button text to "GET YOURS", clicked Save, verified changes appeared on homepage
+      - ✅ Successfully restored original values (subtitle: "Boldly designed everyday goods...", primary button: "Shop Now")
+      
+      IMPORTANT NOTE: Backend logs show intermittent WooCommerce connection errors (ERROR: WooCommerce connection error, 502: Unable to reach store). However, products and categories ARE displaying on the frontend, suggesting either cached data or that some requests succeed. This may explain user's previous report of not seeing categories/products - the issue appears to be intermittent WooCommerce API connectivity, not a frontend bug.
+      
+      CONCLUSION: All hero visual changes and admin Hero Text configuration working perfectly. The old h1 is removed, the yellow marquee band below hero is removed, and admin can successfully edit hero text via the Hero Text tab.
+
+      - Verified hero values match original
+      
+      CONCLUSION: Hero text configuration working perfectly. All requirements met.

@@ -203,6 +203,14 @@ DEFAULT_MARQUEE = [
     "Made in India, with love",
 ]
 
+DEFAULT_HERO = {
+    "subtitle": "Boldly designed everyday goods — for the humans who love hard and the pets who love harder. Made in India, for both of you.",
+    "primary_label": "Shop Now",
+    "primary_link": "/shop/for-you",
+    "secondary_label": "Shop For Your Pet",
+    "secondary_link": "/shop/for-your-pet",
+}
+
 async def get_settings_doc() -> dict:
     doc = await db.settings.find_one({"_id": "site"})
     if not doc:
@@ -233,9 +241,11 @@ async def resolve_festive_category_id() -> int:
 
 def public_settings(doc: dict) -> dict:
     festive = doc.get("festive") or {}
+    hero = {**DEFAULT_HERO, **(doc.get("hero") or {})}
     return {
         "hero_images": [{"id": h["id"], "url": f"/api/media/{h['storage_path']}", "alt": h.get("alt", "Sojaru")}
                         for h in doc.get("hero_images", [])],
+        "hero": hero,
         "marquee_texts": doc.get("marquee_texts", DEFAULT_MARQUEE),
         "festive": {
             "title": festive.get("title", "Festive Collection"),
@@ -546,6 +556,7 @@ async def account_orders(user: dict = Depends(get_current_user)):
 class SettingsUpdate(BaseModel):
     marquee_texts: Optional[List[str]] = None
     festive: Optional[dict] = None
+    hero: Optional[dict] = None
 
 
 @api.get("/settings")
@@ -569,6 +580,18 @@ async def admin_update_settings(body: SettingsUpdate, admin: dict = Depends(get_
     updates = {}
     if body.marquee_texts is not None:
         updates["marquee_texts"] = [t.strip() for t in body.marquee_texts if t and t.strip()]
+    if body.hero is not None:
+        h = body.hero
+        def _pick(key, fallback):
+            v = h.get(key)
+            return v.strip() if isinstance(v, str) and v.strip() else fallback
+        updates["hero"] = {
+            "subtitle": _pick("subtitle", DEFAULT_HERO["subtitle"]),
+            "primary_label": _pick("primary_label", DEFAULT_HERO["primary_label"]),
+            "primary_link": _pick("primary_link", DEFAULT_HERO["primary_link"]),
+            "secondary_label": _pick("secondary_label", DEFAULT_HERO["secondary_label"]),
+            "secondary_link": _pick("secondary_link", DEFAULT_HERO["secondary_link"]),
+        }
     if body.festive is not None:
         f = body.festive
         # Category is permanently locked to the "festive-collections" WooCommerce
