@@ -36,20 +36,9 @@ function Hero() {
       </div>
       <div className="relative mx-auto flex min-h-[580px] max-w-7xl items-center px-4 py-16 sm:min-h-[640px] sm:px-6 lg:min-h-[86vh] lg:px-8">
         <div className="max-w-xl">
-          <div className="inline-flex animate-fade-up items-center gap-2 bg-yellow px-3 py-1.5 text-xs font-bold uppercase tracking-[0.15em] text-ink">
-            <PawPrint className="h-4 w-4" /> Lifestyle for people & pets
-          </div>
-          <h1 className="mt-5 max-w-md animate-fade-up font-display text-3xl font-extrabold uppercase leading-tight tracking-tight text-cream sm:text-4xl" style={{ animationDelay: "80ms" }}>
+          <h1 className="max-w-md animate-fade-up font-display text-3xl font-extrabold uppercase leading-tight tracking-tight text-cream sm:text-4xl" style={{ animationDelay: "80ms" }}>
             {hero.subtitle || "Boldly designed everyday goods — for the humans who love hard and the pets who love harder. Made in India, for both of you."}
           </h1>
-          <div className="mt-8 flex animate-fade-up flex-wrap gap-3" style={{ animationDelay: "240ms" }}>
-            <Button asChild className="h-12 rounded-none bg-yellow px-8 text-base font-bold uppercase text-ink transition-all hover:-translate-y-1 hover:bg-cream">
-              <Link to={hero.primary_link || "/shop/for-you"} data-testid="hero-shop-for-you-btn">{hero.primary_label || "Shop Now"} <ArrowRight className="ml-2 h-4 w-4" /></Link>
-            </Button>
-            <Button asChild variant="outline" className="h-12 rounded-none border-2 border-cream bg-transparent px-8 text-base font-bold uppercase text-cream transition-all hover:-translate-y-1 hover:bg-cream hover:text-ink">
-              <Link to={hero.secondary_link || "/shop/for-your-pet"} data-testid="hero-shop-for-pet-btn"><PawPrint className="mr-2 h-4 w-4" /> {hero.secondary_label || "Shop For Your Pet"}</Link>
-            </Button>
-          </div>
         </div>
       </div>
       {heroImages.length > 1 && (

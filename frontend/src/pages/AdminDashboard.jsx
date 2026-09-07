@@ -142,55 +142,24 @@ function FestiveManager() {
 
 function HeroTextManager() {
   const { settings, reloadSettings } = useStore();
-  const [hero, setHero] = useState({ subtitle: "", primary_label: "", primary_link: "", secondary_label: "", secondary_link: "" });
+  const [subtitle, setSubtitle] = useState("");
   const [saving, setSaving] = useState(false);
   useEffect(() => {
-    if (settings?.hero) setHero({
-      subtitle: settings.hero.subtitle || "",
-      primary_label: settings.hero.primary_label || "",
-      primary_link: settings.hero.primary_link || "",
-      secondary_label: settings.hero.secondary_label || "",
-      secondary_link: settings.hero.secondary_link || "",
-    });
+    if (settings?.hero) setSubtitle(settings.hero.subtitle || "");
   }, [settings]);
 
-  const set = (k, v) => setHero((h) => ({ ...h, [k]: v }));
   const save = async () => {
     setSaving(true);
-    try { await admin.updateSettings({ hero }); await reloadSettings(); toast.success("Hero text updated"); }
+    try { await admin.updateSettings({ hero: { subtitle } }); await reloadSettings(); toast.success("Hero text updated"); }
     catch (err) { toast.error(apiErr(err)); } finally { setSaving(false); }
   };
 
   return (
     <div className="max-w-2xl space-y-6">
-      <p className="text-sm text-muted-foreground">Edit the headline text and the two call-to-action buttons shown on the homepage hero banner.</p>
+      <p className="text-sm text-muted-foreground">Edit the text shown on the homepage hero banner.</p>
       <div>
         <Label>Hero text</Label>
-        <Textarea value={hero.subtitle} onChange={(e) => set("subtitle", e.target.value)} rows={3} placeholder="Boldly designed everyday goods…" className="mt-1.5 rounded-none border-2 border-ink bg-cream" data-testid="hero-subtitle-input" />
-      </div>
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div className="space-y-4 border-2 border-ink p-4">
-          <p className="text-xs font-bold uppercase tracking-widest text-ink">Primary button</p>
-          <div>
-            <Label>Button text</Label>
-            <Input value={hero.primary_label} onChange={(e) => set("primary_label", e.target.value)} placeholder="Shop Now" className="mt-1.5 rounded-none border-2 border-ink bg-cream" data-testid="hero-primary-label-input" />
-          </div>
-          <div>
-            <Label>Link</Label>
-            <Input value={hero.primary_link} onChange={(e) => set("primary_link", e.target.value)} placeholder="/shop/for-you" className="mt-1.5 rounded-none border-2 border-ink bg-cream" data-testid="hero-primary-link-input" />
-          </div>
-        </div>
-        <div className="space-y-4 border-2 border-ink p-4">
-          <p className="text-xs font-bold uppercase tracking-widest text-ink">Secondary button</p>
-          <div>
-            <Label>Button text</Label>
-            <Input value={hero.secondary_label} onChange={(e) => set("secondary_label", e.target.value)} placeholder="Shop For Your Pet" className="mt-1.5 rounded-none border-2 border-ink bg-cream" data-testid="hero-secondary-label-input" />
-          </div>
-          <div>
-            <Label>Link</Label>
-            <Input value={hero.secondary_link} onChange={(e) => set("secondary_link", e.target.value)} placeholder="/shop/for-your-pet" className="mt-1.5 rounded-none border-2 border-ink bg-cream" data-testid="hero-secondary-link-input" />
-          </div>
-        </div>
+        <Textarea value={subtitle} onChange={(e) => setSubtitle(e.target.value)} rows={3} placeholder="Boldly designed everyday goods…" className="mt-1.5 rounded-none border-2 border-ink bg-cream" data-testid="hero-subtitle-input" />
       </div>
       <Button onClick={save} disabled={saving} className="rounded-none bg-ink font-bold uppercase text-cream hover:bg-yellow hover:text-ink" data-testid="hero-text-save">
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save hero text"}
