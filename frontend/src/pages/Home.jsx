@@ -34,7 +34,7 @@ function Hero() {
         ))}
         <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/60 to-ink/15 sm:to-transparent" />
       </div>
-      <div className="relative mx-auto flex min-h-[580px] max-w-7xl items-center px-4 py-16 sm:min-h-[640px] sm:px-6 lg:min-h-[86vh] lg:px-8">
+      <div className="relative mx-auto flex min-h-[580px] max-w-7xl items-end px-4 pb-16 pt-16 sm:min-h-[640px] sm:px-6 sm:pb-20 lg:min-h-[86vh] lg:px-8">
         <div className="max-w-xl">
           <h1 className="max-w-md animate-fade-up font-display text-3xl font-extrabold uppercase leading-tight tracking-tight text-cream sm:text-4xl" style={{ animationDelay: "80ms" }}>
             {hero.subtitle || "Boldly designed everyday goods — for the humans who love hard and the pets who love harder. Made in India, for both of you."}
