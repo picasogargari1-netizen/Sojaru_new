@@ -134,10 +134,11 @@ function WarmMarquee() {
 
 // ─── 4. CATEGORY BENTO GRID (hyppy-style 4-col portrait grid) ─────────────────
 function CategoryRow() {
-  const { forYou, forPet, childrenOf, loaded } = useStore();
+  const { forYou, forPet, childrenOf, loaded, settings } = useStore();
   const forYouSubs = forYou ? childrenOf(forYou.id) : [];
   const forPetSubs = forPet ? childrenOf(forPet.id) : [];
   const all = [...forYouSubs, ...forPetSubs];
+  const adminCatImages = settings?.category_images || {};
 
   if (!loaded || all.length === 0) return null;
   return (
@@ -147,26 +148,33 @@ function CategoryRow() {
           style={{ gap: "8px" }}
           className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
         >
-          {all.map((c, i) => (
-            <Link
-              key={c.id}
-              to={`/category/${c.slug}`}
-              data-testid={`category-tile-${c.slug}`}
-              className="group animate-fade-up"
-              style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
-            >
-              <div className="overflow-hidden bg-oat">
-                <img
-                  src={c.image || catImage(c.slug)}
-                  alt={c.name}
-                  className="aspect-[4/5] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                />
-              </div>
-              <p className="mt-2 text-center font-display text-lg text-ink group-hover:text-terracotta transition-colors">
-                {c.name}
-              </p>
-            </Link>
-          ))}
+          {all.map((c, i) => {
+            // Priority: 1) Admin-uploaded image 2) WooCommerce image 3) hardcoded fallback
+            const imgSrc = adminCatImages[c.slug]
+              ? `${process.env.REACT_APP_BACKEND_URL}${adminCatImages[c.slug]}`
+              : (c.image || catImage(c.slug));
+            return (
+              <Link
+                key={c.id}
+                to={`/category/${c.slug}`}
+                data-testid={`category-tile-${c.slug}`}
+                className="group animate-fade-up"
+                style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
+              >
+                <div className="overflow-hidden bg-oat">
+                  <img
+                    src={imgSrc}
+                    alt={c.name}
+                    className="aspect-[4/5] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                    onError={(e) => { e.target.src = catImage(c.slug); }}
+                  />
+                </div>
+                <p className="mt-2 text-center font-display text-lg text-ink group-hover:text-terracotta transition-colors">
+                  {c.name}
+                </p>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

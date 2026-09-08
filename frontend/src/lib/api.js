@@ -30,6 +30,8 @@ export const admin = {
   updateSettings: (payload) => client.put("/admin/settings", payload).then((r) => r.data),
   uploadHero: (formData) => client.post("/admin/hero-images", formData, { headers: { "Content-Type": "multipart/form-data" } }).then((r) => r.data),
   deleteHero: (id) => client.delete(`/admin/hero-images/${id}`).then((r) => r.data),
+  uploadCategoryImage: (slug, formData) => client.post(`/admin/category-images/${slug}`, formData, { headers: { "Content-Type": "multipart/form-data" } }).then((r) => r.data),
+  deleteCategoryImage: (slug) => client.delete(`/admin/category-images/${slug}`).then((r) => r.data),
 };
 
 export const products = {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Upload, Trash2, Plus, X, LogOut, Image as ImageIcon, Type, Sparkles, LayoutTemplate } from "lucide-react";
+import { Loader2, Upload, Trash2, Plus, X, LogOut, Image as ImageIcon, Type, Sparkles, LayoutTemplate, Grid3x3 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { useStore } from "@/context/StoreContext";
@@ -168,6 +168,125 @@ function HeroTextManager() {
   );
 }
 
+function CategoryImagesManager() {
+  const { forYou, forPet, childrenOf, loaded, settings, reloadSettings } = useStore();
+  const [busy, setBusy] = useState({});
+  const fileRefs = useRef({});
+
+  const forYouSubs = forYou ? childrenOf(forYou.id) : [];
+  const forPetSubs = forPet ? childrenOf(forPet.id) : [];
+  const allCats = [...forYouSubs, ...forPetSubs];
+  const adminCatImages = settings?.category_images || {};
+
+  const onUpload = async (slug, e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy((b) => ({ ...b, [slug]: true }));
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      await admin.uploadCategoryImage(slug, fd);
+      await reloadSettings();
+      toast.success(`Image updated for "${slug}"`);
+    } catch (err) {
+      toast.error(apiErr(err, "Upload failed"));
+    } finally {
+      setBusy((b) => ({ ...b, [slug]: false }));
+      if (fileRefs.current[slug]) fileRefs.current[slug].value = "";
+    }
+  };
+
+  const onDelete = async (slug) => {
+    setBusy((b) => ({ ...b, [slug]: true }));
+    try {
+      await admin.deleteCategoryImage(slug);
+      await reloadSettings();
+      toast.success(`Custom image removed for "${slug}"`);
+    } catch (err) {
+      toast.error(apiErr(err));
+    } finally {
+      setBusy((b) => ({ ...b, [slug]: false })); }
+  };
+
+  if (!loaded) return <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-ink" /></div>;
+  if (allCats.length === 0) return <p className="text-sm text-muted-foreground">No sub-categories found. Add them in WooCommerce and they will appear here automatically.</p>;
+
+  return (
+    <div>
+      <p className="text-sm text-muted-foreground">
+        Upload a custom portrait image (4:5 ratio recommended) for each sub-category.
+        New sub-categories added in WooCommerce appear here automatically.
+        Images are served at highest priority over WooCommerce images.
+      </p>
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        {allCats.map((cat) => {
+          const adminImg = adminCatImages[cat.slug];
+          const displayImg = adminImg
+            ? `${process.env.REACT_APP_BACKEND_URL}${adminImg}`
+            : cat.image || null;
+          const isBusy = busy[cat.slug];
+          return (
+            <div key={cat.id} data-testid={`cat-img-tile-${cat.slug}`} className="group relative flex flex-col overflow-hidden border-2 border-ink">
+              {/* Image area */}
+              <div className="relative aspect-[4/5] w-full bg-oat">
+                {displayImg ? (
+                  <img
+                    src={displayImg}
+                    alt={cat.name}
+                    className="h-full w-full object-cover"
+                    onError={(e) => { e.target.style.display = "none"; }}
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <ImageIcon className="h-10 w-10 text-ink/20" />
+                  </div>
+                )}
+                {/* Overlay buttons */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-ink/60 opacity-0 transition-opacity group-hover:opacity-100">
+                  <button
+                    onClick={() => fileRefs.current[cat.slug]?.click()}
+                    disabled={isBusy}
+                    data-testid={`cat-upload-${cat.slug}`}
+                    className="flex items-center gap-1.5 bg-cream px-3 py-1.5 text-xs font-bold uppercase text-ink hover:bg-yellow disabled:opacity-50"
+                  >
+                    {isBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                    {adminImg ? "Replace" : "Upload"}
+                  </button>
+                  {adminImg && (
+                    <button
+                      onClick={() => onDelete(cat.slug)}
+                      disabled={isBusy}
+                      data-testid={`cat-delete-${cat.slug}`}
+                      className="flex items-center gap-1.5 bg-destructive px-3 py-1.5 text-xs font-bold uppercase text-white hover:bg-red-700 disabled:opacity-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" /> Remove
+                    </button>
+                  )}
+                </div>
+                {adminImg && (
+                  <span className="absolute left-1.5 top-1.5 bg-terracotta px-1.5 py-0.5 text-[0.6rem] font-bold uppercase text-white">custom</span>
+                )}
+              </div>
+              {/* Category name */}
+              <div className="border-t-2 border-ink bg-cream px-2 py-2 text-center text-xs font-bold uppercase tracking-wide text-ink">
+                {cat.name}
+              </div>
+              <input
+                ref={(el) => (fileRefs.current[cat.slug] = el)}
+                type="file"
+                accept="image/*"
+                onChange={(e) => onUpload(cat.slug, e)}
+                className="hidden"
+                data-testid={`cat-file-input-${cat.slug}`}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   usePageMeta({ title: "Admin Dashboard — Sojaru" });
   const { user, ready, logout } = useAuth();
@@ -191,11 +310,13 @@ export default function AdminDashboard() {
           <TabsTrigger value="herotext" className="rounded-none border-2 border-ink data-[state=active]:bg-yellow" data-testid="admin-tab-herotext"><LayoutTemplate className="mr-2 h-4 w-4" /> Hero Text</TabsTrigger>
           <TabsTrigger value="marquee" className="rounded-none border-2 border-ink data-[state=active]:bg-yellow" data-testid="admin-tab-marquee"><Type className="mr-2 h-4 w-4" /> Moving Text</TabsTrigger>
           <TabsTrigger value="festive" className="rounded-none border-2 border-ink data-[state=active]:bg-yellow" data-testid="admin-tab-festive"><Sparkles className="mr-2 h-4 w-4" /> Festive Collection</TabsTrigger>
+          <TabsTrigger value="categories" className="rounded-none border-2 border-ink data-[state=active]:bg-yellow" data-testid="admin-tab-categories"><Grid3x3 className="mr-2 h-4 w-4" /> Category Images</TabsTrigger>
         </TabsList>
         <TabsContent value="hero"><HeroManager /></TabsContent>
         <TabsContent value="herotext"><HeroTextManager /></TabsContent>
         <TabsContent value="marquee"><MarqueeManager /></TabsContent>
         <TabsContent value="festive"><FestiveManager /></TabsContent>
+        <TabsContent value="categories"><CategoryImagesManager /></TabsContent>
       </Tabs>
     </div>
   );

@@ -242,6 +242,9 @@ async def resolve_festive_category_id() -> int:
 def public_settings(doc: dict) -> dict:
     festive = doc.get("festive") or {}
     hero = {**DEFAULT_HERO, **(doc.get("hero") or {})}
+    # category_images: {slug: url}
+    raw_cat_imgs = doc.get("category_images") or {}
+    cat_images = {slug: f"/api/media/{v['storage_path']}" for slug, v in raw_cat_imgs.items() if v.get("storage_path")}
     return {
         "hero_images": [{"id": h["id"], "url": f"/api/media/{h['storage_path']}", "alt": h.get("alt", "Sojaru")}
                         for h in doc.get("hero_images", [])],
@@ -253,6 +256,7 @@ def public_settings(doc: dict) -> dict:
             "category_slug": FESTIVE_SLUG,
             "enabled": festive.get("enabled", True),
         },
+        "category_images": cat_images,
     }
 
 async def public_settings_resolved(doc: dict) -> dict:
@@ -626,6 +630,40 @@ async def admin_upload_hero(file: UploadFile = File(...), admin: dict = Depends(
         raise HTTPException(status_code=502, detail="Upload failed. Please try again.")
     record = {"id": str(uuid.uuid4()), "storage_path": result["path"], "alt": "Sojaru"}
     await db.settings.update_one({"_id": "site"}, {"$push": {"hero_images": record}}, upsert=True)
+    doc = await get_settings_doc()
+    return public_settings(doc)
+
+
+@api.post("/admin/category-images/{slug}")
+async def admin_upload_category_image(slug: str, file: UploadFile = File(...), admin: dict = Depends(get_admin_user)):
+    ext = (file.filename.rsplit(".", 1)[-1] if "." in (file.filename or "") else "jpg").lower()
+    if ext not in MIME_TYPES:
+        raise HTTPException(status_code=400, detail="Please upload a JPG, PNG, GIF or WebP image.")
+    data = await file.read()
+    if len(data) > 8 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image too large. Please keep it under 8MB.")
+    path = f"{APP_NAME}/categories/{slug}-{uuid.uuid4()}.{ext}"
+    try:
+        result = put_object(path, data, MIME_TYPES[ext])
+    except Exception as e:
+        logger.error(f"Category image upload failed: {e}")
+        raise HTTPException(status_code=502, detail="Upload failed. Please try again.")
+    record = {"storage_path": result["path"], "id": str(uuid.uuid4())}
+    await db.settings.update_one(
+        {"_id": "site"},
+        {"$set": {f"category_images.{slug}": record}},
+        upsert=True,
+    )
+    doc = await get_settings_doc()
+    return public_settings(doc)
+
+
+@api.delete("/admin/category-images/{slug}")
+async def admin_delete_category_image(slug: str, admin: dict = Depends(get_admin_user)):
+    await db.settings.update_one(
+        {"_id": "site"},
+        {"$unset": {f"category_images.{slug}": ""}},
+    )
     doc = await get_settings_doc()
     return public_settings(doc)
 

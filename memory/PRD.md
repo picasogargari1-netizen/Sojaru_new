@@ -20,6 +20,14 @@ Build "Sojaru", a custom headless storefront on top of a live WordPress + WooCom
 - Storefront: Home (hero, two worlds, shop-by-category, featured/new/sale/best-seller rows, editorial banner), World pages, Category pages (filters/sort/load-more), Product detail (gallery, variations, qty, add/buy, accordions, related, JSON-LD), Search (dialog + results page), Cart drawer (free-ship progress, coupon at checkout), Checkout (order creation -> WooCommerce hosted payment link), Account (orders/profile/addresses), Login/Register, About/Contact/FAQ/Shipping/Privacy/Terms, 404.
 - SEO meta/OG/canonical per page, product structured data.
 
+## Category Image Management (2026-09)
+- Dynamic sub-categories: All WooCommerce sub-categories automatically appear on homepage bento grid and in admin
+- Admin "Category Images" tab: 4-column portrait grid of all sub-categories. Hover shows Upload/Replace/Replace/Remove
+- Custom image upload per category slug → stored in Emergent Object Storage → served via /api/media/
+- Homepage CategoryRow uses priority: admin-uploaded > WooCommerce > hardcoded fallback
+- Fixed: app.include_router(api) was missing (all 22 routes restored)
+- Fixed: EMERGENT_LLM_KEY added to backend/.env (storage now initializes correctly)
+
 ## Homepage Redesign (2026-09) — hyppy.in match
 - Marquee rolling ticker above header (admin-configurable from MongoDB)
 - Hero image slider (admin-uploadable)
