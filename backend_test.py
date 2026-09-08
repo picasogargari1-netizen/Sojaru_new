@@ -1,610 +1,261 @@
 #!/usr/bin/env python3
 """
-Sojaru Admin Backend API Tests
-Tests admin authentication, marquee texts, festive collection, and hero image management.
+Backend API Health Test Suite
+Tests the 6 critical endpoints after deployment fix
 """
-
-import io
-import sys
 import requests
-from PIL import Image
+import json
+import sys
 
-# Backend base URL
-BASE_URL = "https://design-refresh-615.preview.emergentagent.com/api"
-
-# Admin credentials
+# Test configuration
+BASE_URL = "http://localhost:8001"
 ADMIN_EMAIL = "hello@sojaru.co.in"
 ADMIN_PASSWORD = "admin123"
+WRONG_PASSWORD = "wrongpassword123"
 
-# Test results tracking
-test_results = {
-    "auth": {"passed": [], "failed": []},
-    "marquee": {"passed": [], "failed": []},
-    "festive": {"passed": [], "failed": []},
-    "hero_images": {"passed": [], "failed": []}
-}
+def print_test(test_num, description):
+    print(f"\n{'='*70}")
+    print(f"TEST {test_num}: {description}")
+    print('='*70)
 
-def log_pass(category, message):
-    """Log a passing test"""
-    print(f"✅ {message}")
-    test_results[category]["passed"].append(message)
+def print_result(passed, message):
+    status = "✅ PASSED" if passed else "❌ FAILED"
+    print(f"{status}: {message}")
+    return passed
 
-def log_fail(category, message):
-    """Log a failing test"""
-    print(f"❌ {message}")
-    test_results[category]["failed"].append(message)
+def test_1_categories():
+    """Test 1: GET /api/categories - expect 200 with array of categories"""
+    print_test(1, "GET /api/categories (WooCommerce data)")
+    
+    try:
+        response = requests.get(f"{BASE_URL}/api/categories", timeout=30)
+        
+        if response.status_code != 200:
+            return print_result(False, f"Expected status 200, got {response.status_code}")
+        
+        data = response.json()
+        
+        if not isinstance(data, list):
+            return print_result(False, f"Expected array, got {type(data)}")
+        
+        if len(data) == 0:
+            return print_result(False, "Categories array is empty")
+        
+        # Check first category has expected structure
+        if data:
+            cat = data[0]
+            if not all(k in cat for k in ['id', 'name', 'slug']):
+                return print_result(False, f"Category missing required fields: {cat}")
+        
+        return print_result(True, f"Returned {len(data)} categories from WooCommerce")
+        
+    except Exception as e:
+        return print_result(False, f"Exception: {str(e)}")
 
-def generate_test_png():
-    """Generate a tiny valid PNG image in memory"""
-    img = Image.new('RGB', (10, 10), color='red')
-    buf = io.BytesIO()
-    img.save(buf, format='PNG')
-    buf.seek(0)
-    return buf.getvalue()
+def test_2_products():
+    """Test 2: GET /api/products?per_page=3 - expect 200 with items array and total > 0"""
+    print_test(2, "GET /api/products?per_page=3")
+    
+    try:
+        response = requests.get(f"{BASE_URL}/api/products?per_page=3", timeout=30)
+        
+        if response.status_code != 200:
+            return print_result(False, f"Expected status 200, got {response.status_code}")
+        
+        data = response.json()
+        
+        if 'items' not in data:
+            return print_result(False, f"Response missing 'items' key: {list(data.keys())}")
+        
+        if not isinstance(data['items'], list):
+            return print_result(False, f"'items' should be array, got {type(data['items'])}")
+        
+        if len(data['items']) == 0:
+            return print_result(False, "Products items array is empty")
+        
+        if 'total' not in data:
+            return print_result(False, "Response missing 'total' key")
+        
+        if data['total'] <= 0:
+            return print_result(False, f"Expected total > 0, got {data['total']}")
+        
+        return print_result(True, f"Returned {len(data['items'])} products, total={data['total']}")
+        
+    except Exception as e:
+        return print_result(False, f"Exception: {str(e)}")
 
-def print_summary():
-    """Print test summary"""
-    print("\n" + "="*80)
-    print("TEST SUMMARY")
-    print("="*80)
+def test_3_settings():
+    """Test 3: GET /api/settings - expect 200 with hero, marquee_texts keys"""
+    print_test(3, "GET /api/settings (MongoDB data)")
     
-    total_passed = sum(len(v["passed"]) for v in test_results.values())
-    total_failed = sum(len(v["failed"]) for v in test_results.values())
-    
-    for category, results in test_results.items():
-        print(f"\n{category.upper().replace('_', ' ')}:")
-        print(f"  Passed: {len(results['passed'])}")
-        print(f"  Failed: {len(results['failed'])}")
-        if results["failed"]:
-            for fail in results["failed"]:
-                print(f"    - {fail}")
-    
-    print(f"\n{'='*80}")
-    print(f"TOTAL: {total_passed} passed, {total_failed} failed")
-    print("="*80)
-    
-    return total_failed == 0
+    try:
+        response = requests.get(f"{BASE_URL}/api/settings", timeout=30)
+        
+        if response.status_code != 200:
+            return print_result(False, f"Expected status 200, got {response.status_code}")
+        
+        data = response.json()
+        
+        if 'hero' not in data:
+            return print_result(False, f"Response missing 'hero' key: {list(data.keys())}")
+        
+        if 'marquee_texts' not in data:
+            return print_result(False, f"Response missing 'marquee_texts' key: {list(data.keys())}")
+        
+        # Verify hero structure
+        hero = data['hero']
+        required_hero_keys = ['subtitle', 'primary_label', 'primary_link', 'secondary_label', 'secondary_link']
+        missing_keys = [k for k in required_hero_keys if k not in hero]
+        if missing_keys:
+            return print_result(False, f"Hero missing keys: {missing_keys}")
+        
+        # Verify marquee_texts is array
+        if not isinstance(data['marquee_texts'], list):
+            return print_result(False, f"marquee_texts should be array, got {type(data['marquee_texts'])}")
+        
+        return print_result(True, f"Settings returned with hero and marquee_texts (marquee has {len(data['marquee_texts'])} items)")
+        
+    except Exception as e:
+        return print_result(False, f"Exception: {str(e)}")
 
-# =============================================================================
-# TEST 1: AUTHENTICATION & AUTHORIZATION
-# =============================================================================
-def test_auth():
-    """Test admin authentication and authorization"""
-    print("\n" + "="*80)
-    print("TEST 1: AUTHENTICATION & AUTHORIZATION")
-    print("="*80)
+def test_4_admin_login():
+    """Test 4: POST /api/auth/login with admin credentials - expect 200, token, is_admin=true"""
+    print_test(4, "POST /api/auth/login (admin credentials)")
     
-    # 1.1: Admin login
-    print("\n[1.1] Testing admin login...")
     try:
-        resp = requests.post(f"{BASE_URL}/auth/login", json={
-            "email": ADMIN_EMAIL,
-            "password": ADMIN_PASSWORD
-        }, timeout=30)
+        response = requests.post(
+            f"{BASE_URL}/api/auth/login",
+            json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
+            timeout=30
+        )
         
-        if resp.status_code != 200:
-            log_fail("auth", f"Admin login failed with status {resp.status_code}: {resp.text}")
-            return None, None
+        if response.status_code != 200:
+            return print_result(False, f"Expected status 200, got {response.status_code}. Response: {response.text}")
         
-        data = resp.json()
-        admin_token = data.get("token")
-        user = data.get("user", {})
+        data = response.json()
         
-        if not admin_token:
-            log_fail("auth", "Admin login response missing token")
-            return None, None
+        if 'token' not in data:
+            return print_result(False, f"Response missing 'token' key: {list(data.keys())}")
         
-        if not user.get("is_admin"):
-            log_fail("auth", f"Admin login user.is_admin is {user.get('is_admin')}, expected True")
-            return None, None
+        if not data['token']:
+            return print_result(False, "Token is empty")
         
-        log_pass("auth", f"Admin login successful with token and is_admin=True")
+        if 'user' not in data:
+            return print_result(False, f"Response missing 'user' key: {list(data.keys())}")
+        
+        user = data['user']
+        
+        if 'is_admin' not in user:
+            return print_result(False, f"User missing 'is_admin' key: {list(user.keys())}")
+        
+        if user['is_admin'] != True:
+            return print_result(False, f"Expected is_admin=true, got {user['is_admin']}")
+        
+        # Store token for next test
+        global admin_token
+        admin_token = data['token']
+        
+        return print_result(True, f"Admin login successful, token received, is_admin=true")
         
     except Exception as e:
-        log_fail("auth", f"Admin login exception: {e}")
-        return None, None
-    
-    # 1.2: Register a normal user
-    print("\n[1.2] Registering a normal user...")
-    normal_token = None
-    try:
-        import random
-        test_email = f"testuser{random.randint(1000, 9999)}@example.com"
-        resp = requests.post(f"{BASE_URL}/auth/register", json={
-            "email": test_email,
-            "password": "testpass123",
-            "first_name": "Test",
-            "last_name": "User"
-        }, timeout=30)
-        
-        if resp.status_code != 200:
-            log_fail("auth", f"Normal user registration failed with status {resp.status_code}: {resp.text}")
-        else:
-            data = resp.json()
-            normal_token = data.get("token")
-            user = data.get("user", {})
-            
-            if user.get("is_admin"):
-                log_fail("auth", "Normal user has is_admin=True, expected False")
-            else:
-                log_pass("auth", f"Normal user registered successfully (is_admin=False)")
-    
-    except Exception as e:
-        log_fail("auth", f"Normal user registration exception: {e}")
-    
-    # 1.3: Test admin endpoints reject no token (401)
-    print("\n[1.3] Testing admin endpoints reject requests with no token...")
-    
-    # Test PUT /api/admin/settings
-    try:
-        resp = requests.put(f"{BASE_URL}/admin/settings", json={
-            "marquee_texts": ["test"]
-        }, timeout=30)
-        
-        if resp.status_code == 401:
-            log_pass("auth", "PUT /api/admin/settings correctly rejects request with no token (401)")
-        else:
-            log_fail("auth", f"PUT /api/admin/settings returned {resp.status_code} instead of 401 for no token")
-    except Exception as e:
-        log_fail("auth", f"PUT /api/admin/settings no-token test exception: {e}")
-    
-    # Test POST /api/admin/hero-images
-    try:
-        png_data = generate_test_png()
-        resp = requests.post(f"{BASE_URL}/admin/hero-images", 
-                           files={"file": ("test.png", png_data, "image/png")},
-                           timeout=30)
-        
-        if resp.status_code == 401:
-            log_pass("auth", "POST /api/admin/hero-images correctly rejects request with no token (401)")
-        else:
-            log_fail("auth", f"POST /api/admin/hero-images returned {resp.status_code} instead of 401 for no token")
-    except Exception as e:
-        log_fail("auth", f"POST /api/admin/hero-images no-token test exception: {e}")
-    
-    # 1.4: Test admin endpoints reject non-admin token (403)
-    if normal_token:
-        print("\n[1.4] Testing admin endpoints reject requests with non-admin token...")
-        
-        # Test PUT /api/admin/settings
-        try:
-            resp = requests.put(f"{BASE_URL}/admin/settings", 
-                              json={"marquee_texts": ["test"]},
-                              headers={"Authorization": f"Bearer {normal_token}"},
-                              timeout=30)
-            
-            if resp.status_code == 403:
-                log_pass("auth", "PUT /api/admin/settings correctly rejects non-admin token (403)")
-            else:
-                log_fail("auth", f"PUT /api/admin/settings returned {resp.status_code} instead of 403 for non-admin token")
-        except Exception as e:
-            log_fail("auth", f"PUT /api/admin/settings non-admin test exception: {e}")
-        
-        # Test POST /api/admin/hero-images
-        try:
-            png_data = generate_test_png()
-            resp = requests.post(f"{BASE_URL}/admin/hero-images", 
-                               files={"file": ("test.png", png_data, "image/png")},
-                               headers={"Authorization": f"Bearer {normal_token}"},
-                               timeout=30)
-            
-            if resp.status_code == 403:
-                log_pass("auth", "POST /api/admin/hero-images correctly rejects non-admin token (403)")
-            else:
-                log_fail("auth", f"POST /api/admin/hero-images returned {resp.status_code} instead of 403 for non-admin token")
-        except Exception as e:
-            log_fail("auth", f"POST /api/admin/hero-images non-admin test exception: {e}")
-    
-    return admin_token, normal_token
+        return print_result(False, f"Exception: {str(e)}")
 
-# =============================================================================
-# TEST 2: MARQUEE TEXTS
-# =============================================================================
-def test_marquee(admin_token):
-    """Test marquee texts update"""
-    print("\n" + "="*80)
-    print("TEST 2: MARQUEE TEXTS")
-    print("="*80)
+def test_5_auth_me():
+    """Test 5: GET /api/auth/me with admin token - expect 200 with user object (tests projection fix)"""
+    print_test(5, "GET /api/auth/me (with admin token - tests MongoDB projection fix)")
     
-    if not admin_token:
-        log_fail("marquee", "Skipping marquee tests - no admin token available")
-        return
-    
-    headers = {"Authorization": f"Bearer {admin_token}"}
-    
-    # 2.1: Get original marquee_texts
-    print("\n[2.1] Getting original marquee_texts...")
-    original_marquee = None
-    try:
-        resp = requests.get(f"{BASE_URL}/settings", timeout=30)
-        if resp.status_code != 200:
-            log_fail("marquee", f"GET /api/settings failed with status {resp.status_code}")
-            return
-        
-        data = resp.json()
-        original_marquee = data.get("marquee_texts", [])
-        log_pass("marquee", f"Retrieved original marquee_texts: {len(original_marquee)} items")
-    except Exception as e:
-        log_fail("marquee", f"GET /api/settings exception: {e}")
-        return
-    
-    # 2.2: Update marquee_texts with test data (including whitespace)
-    print("\n[2.2] Updating marquee_texts with test data...")
-    test_marquee = ["Test line A", "Test line B", "  "]
-    expected_marquee = ["Test line A", "Test line B"]  # Empty/whitespace should be stripped
+    if 'admin_token' not in globals():
+        return print_result(False, "No admin token available (test 4 must pass first)")
     
     try:
-        resp = requests.put(f"{BASE_URL}/admin/settings", 
-                          json={"marquee_texts": test_marquee},
-                          headers=headers,
-                          timeout=30)
+        response = requests.get(
+            f"{BASE_URL}/api/auth/me",
+            headers={"Authorization": f"Bearer {admin_token}"},
+            timeout=30
+        )
         
-        if resp.status_code != 200:
-            log_fail("marquee", f"PUT /api/admin/settings failed with status {resp.status_code}: {resp.text}")
-            return
+        if response.status_code != 200:
+            return print_result(False, f"Expected status 200, got {response.status_code}. Response: {response.text}")
         
-        log_pass("marquee", "PUT /api/admin/settings returned 200")
+        data = response.json()
+        
+        # Verify user object structure
+        required_keys = ['id', 'email', 'is_admin']
+        missing_keys = [k for k in required_keys if k not in data]
+        if missing_keys:
+            return print_result(False, f"User object missing keys: {missing_keys}. Got: {list(data.keys())}")
+        
+        if data['is_admin'] != True:
+            return print_result(False, f"Expected is_admin=true, got {data['is_admin']}")
+        
+        if data['email'] != ADMIN_EMAIL:
+            return print_result(False, f"Expected email={ADMIN_EMAIL}, got {data['email']}")
+        
+        # This is the critical test - if projection was missing, this would crash with ObjectId serialization error
+        return print_result(True, f"Auth /me working correctly with projection fix. User: {data['email']}, is_admin={data['is_admin']}")
+        
     except Exception as e:
-        log_fail("marquee", f"PUT /api/admin/settings exception: {e}")
-        return
-    
-    # 2.3: Verify marquee_texts were updated correctly
-    print("\n[2.3] Verifying marquee_texts update...")
-    try:
-        resp = requests.get(f"{BASE_URL}/settings", timeout=30)
-        if resp.status_code != 200:
-            log_fail("marquee", f"GET /api/settings verification failed with status {resp.status_code}")
-        else:
-            data = resp.json()
-            actual_marquee = data.get("marquee_texts", [])
-            
-            if actual_marquee == expected_marquee:
-                log_pass("marquee", f"Marquee texts correctly updated and whitespace stripped: {actual_marquee}")
-            else:
-                log_fail("marquee", f"Marquee texts mismatch. Expected {expected_marquee}, got {actual_marquee}")
-    except Exception as e:
-        log_fail("marquee", f"GET /api/settings verification exception: {e}")
-    
-    # 2.4: Restore original marquee_texts
-    print("\n[2.4] Restoring original marquee_texts...")
-    if original_marquee is not None:
-        try:
-            resp = requests.put(f"{BASE_URL}/admin/settings", 
-                              json={"marquee_texts": original_marquee},
-                              headers=headers,
-                              timeout=30)
-            
-            if resp.status_code != 200:
-                log_fail("marquee", f"Failed to restore original marquee_texts: {resp.status_code}")
-            else:
-                log_pass("marquee", "Original marquee_texts restored successfully")
-        except Exception as e:
-            log_fail("marquee", f"Restore marquee_texts exception: {e}")
+        return print_result(False, f"Exception: {str(e)}")
 
-# =============================================================================
-# TEST 3: FESTIVE COLLECTION
-# =============================================================================
-def test_festive(admin_token):
-    """Test festive collection update"""
-    print("\n" + "="*80)
-    print("TEST 3: FESTIVE COLLECTION")
-    print("="*80)
-    
-    if not admin_token:
-        log_fail("festive", "Skipping festive tests - no admin token available")
-        return
-    
-    headers = {"Authorization": f"Bearer {admin_token}"}
-    
-    # 3.1: Get a valid category ID
-    print("\n[3.1] Getting valid category ID...")
-    category_id = None
-    try:
-        resp = requests.get(f"{BASE_URL}/categories", timeout=30)
-        if resp.status_code != 200:
-            log_fail("festive", f"GET /api/categories failed with status {resp.status_code}")
-            return
-        
-        categories = resp.json()
-        if not categories:
-            log_fail("festive", "No categories available for testing")
-            return
-        
-        category_id = categories[0]["id"]
-        log_pass("festive", f"Retrieved valid category ID: {category_id}")
-    except Exception as e:
-        log_fail("festive", f"GET /api/categories exception: {e}")
-        return
-    
-    # 3.2: Get original festive settings
-    print("\n[3.2] Getting original festive settings...")
-    original_festive = None
-    try:
-        resp = requests.get(f"{BASE_URL}/settings", timeout=30)
-        if resp.status_code != 200:
-            log_fail("festive", f"GET /api/settings failed with status {resp.status_code}")
-            return
-        
-        data = resp.json()
-        original_festive = data.get("festive", {})
-        log_pass("festive", f"Retrieved original festive settings: {original_festive}")
-    except Exception as e:
-        log_fail("festive", f"GET /api/settings exception: {e}")
-        return
-    
-    # 3.3: Update festive settings
-    print("\n[3.3] Updating festive settings...")
-    test_festive = {
-        "title": "Test Festive Edit",
-        "category_id": category_id,
-        "enabled": True
-    }
+def test_6_wrong_password():
+    """Test 6: POST /api/auth/login with wrong password - expect 401"""
+    print_test(6, "POST /api/auth/login (wrong password - expect 401)")
     
     try:
-        resp = requests.put(f"{BASE_URL}/admin/settings", 
-                          json={"festive": test_festive},
-                          headers=headers,
-                          timeout=30)
+        response = requests.post(
+            f"{BASE_URL}/api/auth/login",
+            json={"email": ADMIN_EMAIL, "password": WRONG_PASSWORD},
+            timeout=30
+        )
         
-        if resp.status_code != 200:
-            log_fail("festive", f"PUT /api/admin/settings failed with status {resp.status_code}: {resp.text}")
-            return
+        if response.status_code != 401:
+            return print_result(False, f"Expected status 401, got {response.status_code}")
         
-        log_pass("festive", "PUT /api/admin/settings returned 200")
+        return print_result(True, f"Wrong password correctly rejected with 401")
+        
     except Exception as e:
-        log_fail("festive", f"PUT /api/admin/settings exception: {e}")
-        return
-    
-    # 3.4: Verify festive settings were updated
-    print("\n[3.4] Verifying festive settings update...")
-    try:
-        resp = requests.get(f"{BASE_URL}/settings", timeout=30)
-        if resp.status_code != 200:
-            log_fail("festive", f"GET /api/settings verification failed with status {resp.status_code}")
-        else:
-            data = resp.json()
-            actual_festive = data.get("festive", {})
-            
-            if actual_festive.get("title") == "Test Festive Edit" and actual_festive.get("category_id") == category_id:
-                log_pass("festive", f"Festive settings correctly updated: {actual_festive}")
-            else:
-                log_fail("festive", f"Festive settings mismatch. Expected title='Test Festive Edit' and category_id={category_id}, got {actual_festive}")
-    except Exception as e:
-        log_fail("festive", f"GET /api/settings verification exception: {e}")
-    
-    # 3.5: Verify products fetch for the category
-    print("\n[3.5] Verifying products fetch for category...")
-    try:
-        resp = requests.get(f"{BASE_URL}/products", params={"category": category_id}, timeout=30)
-        if resp.status_code != 200:
-            log_fail("festive", f"GET /api/products?category={category_id} failed with status {resp.status_code}: {resp.text}")
-        else:
-            data = resp.json()
-            items = data.get("items", [])
-            log_pass("festive", f"GET /api/products?category={category_id} returned successfully with {len(items)} items")
-    except Exception as e:
-        log_fail("festive", f"GET /api/products exception: {e}")
-    
-    # 3.6: Restore original festive settings
-    print("\n[3.6] Restoring original festive settings...")
-    if original_festive:
-        try:
-            resp = requests.put(f"{BASE_URL}/admin/settings", 
-                              json={"festive": original_festive},
-                              headers=headers,
-                              timeout=30)
-            
-            if resp.status_code != 200:
-                log_fail("festive", f"Failed to restore original festive settings: {resp.status_code}")
-            else:
-                log_pass("festive", "Original festive settings restored successfully")
-        except Exception as e:
-            log_fail("festive", f"Restore festive settings exception: {e}")
+        return print_result(False, f"Exception: {str(e)}")
 
-# =============================================================================
-# TEST 4: HERO IMAGES
-# =============================================================================
-def test_hero_images(admin_token):
-    """Test hero image upload, retrieval, max-5 limit, and deletion"""
-    print("\n" + "="*80)
-    print("TEST 4: HERO IMAGES")
-    print("="*80)
-    
-    if not admin_token:
-        log_fail("hero_images", "Skipping hero images tests - no admin token available")
-        return
-    
-    headers = {"Authorization": f"Bearer {admin_token}"}
-    
-    # 4.1: Get current hero_images count
-    print("\n[4.1] Getting current hero_images count...")
-    original_count = 0
-    original_images = []
-    try:
-        resp = requests.get(f"{BASE_URL}/settings", timeout=30)
-        if resp.status_code != 200:
-            log_fail("hero_images", f"GET /api/settings failed with status {resp.status_code}")
-            return
-        
-        data = resp.json()
-        original_images = data.get("hero_images", [])
-        original_count = len(original_images)
-        log_pass("hero_images", f"Current hero_images count: {original_count}")
-    except Exception as e:
-        log_fail("hero_images", f"GET /api/settings exception: {e}")
-        return
-    
-    # Track uploaded test images for cleanup
-    uploaded_test_images = []
-    
-    # 4.2: Upload a test image
-    print("\n[4.2] Uploading a test hero image...")
-    try:
-        png_data = generate_test_png()
-        resp = requests.post(f"{BASE_URL}/admin/hero-images", 
-                           files={"file": ("test_hero.png", png_data, "image/png")},
-                           headers=headers,
-                           timeout=30)
-        
-        if resp.status_code != 200:
-            log_fail("hero_images", f"POST /api/admin/hero-images failed with status {resp.status_code}: {resp.text}")
-            return
-        
-        data = resp.json()
-        new_images = data.get("hero_images", [])
-        new_count = len(new_images)
-        
-        if new_count == original_count + 1:
-            log_pass("hero_images", f"Hero image uploaded successfully, count increased from {original_count} to {new_count}")
-            
-            # Find the newly added image
-            new_image = None
-            for img in new_images:
-                if img not in original_images:
-                    new_image = img
-                    break
-            
-            if new_image:
-                uploaded_test_images.append(new_image)
-                image_url = new_image.get("url")
-                log_pass("hero_images", f"New image URL: {image_url}")
-            else:
-                log_fail("hero_images", "Could not identify newly uploaded image")
-        else:
-            log_fail("hero_images", f"Hero image count mismatch. Expected {original_count + 1}, got {new_count}")
-    except Exception as e:
-        log_fail("hero_images", f"POST /api/admin/hero-images exception: {e}")
-        return
-    
-    # 4.3: Verify image is retrievable via GET
-    print("\n[4.3] Verifying uploaded image is retrievable...")
-    if uploaded_test_images:
-        try:
-            image_url = uploaded_test_images[0].get("url")
-            # URL is relative, need to add base
-            full_url = f"https://design-refresh-615.preview.emergentagent.com{image_url}"
-            
-            resp = requests.get(full_url, timeout=30)
-            if resp.status_code != 200:
-                log_fail("hero_images", f"GET {image_url} failed with status {resp.status_code}")
-            else:
-                content_type = resp.headers.get("Content-Type", "")
-                if "image" in content_type:
-                    log_pass("hero_images", f"Image retrievable at {image_url} with content-type: {content_type}")
-                else:
-                    log_fail("hero_images", f"Image URL returned non-image content-type: {content_type}")
-        except Exception as e:
-            log_fail("hero_images", f"GET image URL exception: {e}")
-    
-    # 4.4: Test max-5 limit
-    print("\n[4.4] Testing max-5 hero images limit...")
-    current_count = original_count + len(uploaded_test_images)
-    
-    if current_count < 5:
-        # Upload more images until we reach 5
-        images_to_upload = 5 - current_count
-        print(f"    Uploading {images_to_upload} more images to reach limit of 5...")
-        
-        for i in range(images_to_upload):
-            try:
-                png_data = generate_test_png()
-                resp = requests.post(f"{BASE_URL}/admin/hero-images", 
-                                   files={"file": (f"test_hero_{i}.png", png_data, "image/png")},
-                                   headers=headers,
-                                   timeout=30)
-                
-                if resp.status_code == 200:
-                    data = resp.json()
-                    new_images = data.get("hero_images", [])
-                    # Find newly added image
-                    for img in new_images:
-                        if img not in original_images and img not in uploaded_test_images:
-                            uploaded_test_images.append(img)
-                            break
-                else:
-                    log_fail("hero_images", f"Failed to upload image {i+1}: {resp.status_code}")
-            except Exception as e:
-                log_fail("hero_images", f"Upload image {i+1} exception: {e}")
-        
-        # Now try to upload the 6th image
-        print("    Attempting to upload 6th image (should fail)...")
-        try:
-            png_data = generate_test_png()
-            resp = requests.post(f"{BASE_URL}/admin/hero-images", 
-                               files={"file": ("test_hero_6th.png", png_data, "image/png")},
-                               headers=headers,
-                               timeout=30)
-            
-            if resp.status_code == 400:
-                error_msg = resp.json().get("detail", "")
-                if "maximum" in error_msg.lower() or "5" in error_msg:
-                    log_pass("hero_images", f"Max-5 limit correctly enforced: {error_msg}")
-                else:
-                    log_fail("hero_images", f"Got 400 but unclear error message: {error_msg}")
-            else:
-                log_fail("hero_images", f"6th image upload returned {resp.status_code} instead of 400")
-        except Exception as e:
-            log_fail("hero_images", f"6th image upload test exception: {e}")
-    else:
-        print(f"    Current count is {current_count}, skipping limit test to avoid exceeding 5")
-        log_pass("hero_images", "Max-5 limit logic verified (skipped actual test due to existing images)")
-    
-    # 4.5: Cleanup - delete all test images
-    print("\n[4.5] Cleaning up test images...")
-    for img in uploaded_test_images:
-        try:
-            image_id = img.get("id")
-            resp = requests.delete(f"{BASE_URL}/admin/hero-images/{image_id}", 
-                                 headers=headers,
-                                 timeout=30)
-            
-            if resp.status_code == 200:
-                print(f"    Deleted test image {image_id}")
-            else:
-                log_fail("hero_images", f"Failed to delete image {image_id}: {resp.status_code}")
-        except Exception as e:
-            log_fail("hero_images", f"Delete image {image_id} exception: {e}")
-    
-    # 4.6: Verify final count equals original count
-    print("\n[4.6] Verifying final hero_images count...")
-    try:
-        resp = requests.get(f"{BASE_URL}/settings", timeout=30)
-        if resp.status_code != 200:
-            log_fail("hero_images", f"GET /api/settings final check failed with status {resp.status_code}")
-        else:
-            data = resp.json()
-            final_images = data.get("hero_images", [])
-            final_count = len(final_images)
-            
-            if final_count == original_count:
-                log_pass("hero_images", f"Final hero_images count matches original: {final_count}")
-            else:
-                log_fail("hero_images", f"Final count mismatch. Expected {original_count}, got {final_count}")
-    except Exception as e:
-        log_fail("hero_images", f"Final count verification exception: {e}")
-
-# =============================================================================
-# MAIN
-# =============================================================================
 def main():
-    print("="*80)
-    print("SOJARU ADMIN BACKEND API TESTS")
-    print("="*80)
-    print(f"Backend URL: {BASE_URL}")
-    print(f"Admin Email: {ADMIN_EMAIL}")
-    print("="*80)
+    print("\n" + "="*70)
+    print("BACKEND API HEALTH TEST SUITE")
+    print("Testing deployment fix: .env files + MongoDB projections")
+    print("="*70)
+    print(f"Base URL: {BASE_URL}")
+    print(f"Admin credentials: {ADMIN_EMAIL} / {ADMIN_PASSWORD}")
+    
+    results = []
     
     # Run all tests
-    admin_token, normal_token = test_auth()
-    test_marquee(admin_token)
-    test_festive(admin_token)
-    test_hero_images(admin_token)
+    results.append(("Test 1: GET /api/categories", test_1_categories()))
+    results.append(("Test 2: GET /api/products", test_2_products()))
+    results.append(("Test 3: GET /api/settings", test_3_settings()))
+    results.append(("Test 4: Admin login", test_4_admin_login()))
+    results.append(("Test 5: GET /api/auth/me", test_5_auth_me()))
+    results.append(("Test 6: Wrong password", test_6_wrong_password()))
     
-    # Print summary
-    all_passed = print_summary()
+    # Summary
+    print("\n" + "="*70)
+    print("TEST SUMMARY")
+    print("="*70)
     
-    # Exit with appropriate code
-    sys.exit(0 if all_passed else 1)
+    passed = sum(1 for _, result in results if result)
+    total = len(results)
+    
+    for name, result in results:
+        status = "✅ PASS" if result else "❌ FAIL"
+        print(f"{status} - {name}")
+    
+    print("\n" + "="*70)
+    print(f"FINAL RESULT: {passed}/{total} tests passed")
+    print("="*70)
+    
+    if passed == total:
+        print("\n🎉 ALL TESTS PASSED! Backend API is healthy.")
+        return 0
+    else:
+        print(f"\n⚠️  {total - passed} test(s) failed. See details above.")
+        return 1
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

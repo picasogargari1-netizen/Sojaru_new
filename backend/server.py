@@ -176,7 +176,7 @@ async def get_current_user(request: Request) -> dict:
         raise HTTPException(status_code=401, detail="Not authenticated")
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALG])
-        user = await db.users.find_one({"_id": ObjectId(payload["sub"])})
+        user = await db.users.find_one({"_id": ObjectId(payload["sub"])}, {"email": 1, "first_name": 1, "last_name": 1, "wc_customer_id": 1, "is_admin": 1, "password_hash": 1})
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Session expired. Please log in again.")
     except (jwt.InvalidTokenError, Exception):
@@ -473,7 +473,7 @@ async def get_order(order_id: int, request: Request):
 @api.post("/auth/register")
 async def register(body: RegisterIn):
     email = body.email.lower()
-    if await db.users.find_one({"email": email}):
+    if await db.users.find_one({"email": email}, {"_id": 1}):
         raise HTTPException(status_code=400, detail="An account with this email already exists")
     # Create WooCommerce customer (source of truth for customer records)
     wc_customer_id = None
@@ -496,7 +496,7 @@ async def register(body: RegisterIn):
 @api.post("/auth/login")
 async def login(body: LoginIn):
     email = body.email.lower()
-    user = await db.users.find_one({"email": email})
+    user = await db.users.find_one({"email": email}, {"_id": 1, "email": 1, "password_hash": 1, "first_name": 1, "last_name": 1, "wc_customer_id": 1, "is_admin": 1})
     if not user or not verify_password(body.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     uid = str(user["_id"])
@@ -529,7 +529,7 @@ async def update_profile(body: ProfileUpdate, user: dict = Depends(get_current_u
                 await wc_request("PUT", f"customers/{user['wc_customer_id']}", json=wc_payload)
             except HTTPException:
                 pass
-    updated = await db.users.find_one({"_id": ObjectId(user["id"])})
+    updated = await db.users.find_one({"_id": ObjectId(user["id"])}, {"email": 1, "first_name": 1, "last_name": 1, "wc_customer_id": 1, "is_admin": 1, "billing": 1, "shipping": 1})
     updated["id"] = str(updated.pop("_id"))
     updated.pop("password_hash", None)
     return updated
@@ -650,7 +650,7 @@ app.add_middleware(
 async def startup():
     await db.users.create_index("email", unique=True)
     # Seed admin (idempotent, re-hash if password changed)
-    existing = await db.users.find_one({"email": ADMIN_EMAIL})
+    existing = await db.users.find_one({"email": ADMIN_EMAIL}, {"password_hash": 1, "is_admin": 1})
     if not existing:
         await db.users.insert_one({
             "email": ADMIN_EMAIL, "password_hash": hash_password(ADMIN_PASSWORD),
