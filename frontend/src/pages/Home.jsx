@@ -4,17 +4,16 @@ import { ArrowRight } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { useProducts } from "@/hooks/useProducts";
 import { ProductRow } from "@/components/ProductRow";
-import { SectionHeader } from "@/components/States";
 import { IMAGES, catImage } from "@/lib/assets";
 import { mediaUrl } from "@/lib/api";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
+// ─── 1. HERO ──────────────────────────────────────────────────────────────────
 function Hero() {
   const { settings } = useStore();
-  const hero = settings?.hero || {};
   const heroImages = settings?.hero_images?.length
     ? settings.hero_images.map((h) => ({ src: mediaUrl(h.url), alt: h.alt }))
-    : [{ src: IMAGES.hero, alt: "A woman relaxing with her golden retriever, both in cozy Sojaru knits" }];
+    : [{ src: IMAGES.hero, alt: "Sojaru lifestyle" }];
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
@@ -24,50 +23,33 @@ function Hero() {
     return () => clearInterval(t);
   }, [heroImages.length]);
 
-  const primaryLabel = hero.primary_label || "Shop Now";
-  const primaryLink = hero.primary_link || "/shop/for-you";
-  const secondaryLabel = hero.secondary_label || "Shop For Your Pet";
-  const secondaryLink = hero.secondary_link || "/shop/for-your-pet";
-
   return (
-    <section className="relative">
-      <div className="absolute inset-0 overflow-hidden bg-ink">
+    <section className="relative overflow-hidden h-[54vw] min-h-[260px] max-h-[680px]" data-testid="hero-section">
+      <div className="relative h-full w-full">
         {heroImages.map((img, i) => (
-          <img key={i} src={img.src} alt={img.alt}
+          <img
+            key={i}
+            src={img.src}
+            alt={img.alt}
             onError={(e) => { e.target.src = IMAGES.hero; }}
-            className={`absolute inset-0 h-full w-full object-cover object-[72%_center] transition-opacity duration-1000 ${i === idx ? "opacity-100" : "opacity-0"}`} />
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+              i === idx ? "opacity-100" : "opacity-0"
+            }`}
+          />
         ))}
-        <div className="absolute inset-0 bg-gradient-to-r from-ink/65 via-ink/25 to-transparent" />
-      </div>
-      <div className="relative mx-auto flex min-h-[580px] max-w-7xl items-end px-4 pb-16 pt-16 sm:min-h-[640px] sm:px-6 sm:pb-20 lg:min-h-[88vh] lg:px-8">
-        <div className="max-w-lg animate-fade-up" style={{ animationDelay: "80ms" }}>
-          <p className="eyebrow mb-4 text-cream/60">Sojaru</p>
-          <h1 className="font-display text-4xl font-normal leading-[1.15] text-cream sm:text-5xl lg:text-6xl">
-            {hero.subtitle || "Boldly designed everyday goods — for the humans who love hard and the pets who love harder."}
-          </h1>
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <Link
-              to={primaryLink}
-              data-testid="hero-shop-for-you-btn"
-              className="inline-flex items-center gap-2 bg-cream px-6 py-3 text-xs font-medium uppercase tracking-widest text-ink transition-all hover:bg-ink hover:text-cream"
-            >
-              {primaryLabel} <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-            <Link
-              to={secondaryLink}
-              data-testid="hero-shop-for-pet-btn"
-              className="inline-flex items-center gap-2 border border-cream/60 px-6 py-3 text-xs font-medium uppercase tracking-widest text-cream transition-all hover:border-cream hover:bg-cream/10"
-            >
-              {secondaryLabel}
-            </Link>
-          </div>
-        </div>
       </div>
       {heroImages.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+        <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
           {heroImages.map((_, i) => (
-            <button key={i} onClick={() => setIdx(i)} aria-label={`Go to slide ${i + 1}`} data-testid={`hero-dot-${i}`}
-              className={`h-0.5 rounded-none transition-all ${i === idx ? "w-8 bg-cream" : "w-4 bg-cream/40 hover:bg-cream/70"}`} />
+            <button
+              key={i}
+              onClick={() => setIdx(i)}
+              aria-label={`Slide ${i + 1}`}
+              data-testid={`hero-dot-${i}`}
+              className={`h-0.5 transition-all ${
+                i === idx ? "w-8 bg-ink" : "w-3 bg-ink/30 hover:bg-ink/60"
+              }`}
+            />
           ))}
         </div>
       )}
@@ -75,6 +57,27 @@ function Hero() {
   );
 }
 
+// ─── 2. WELCOME MESSAGE ───────────────────────────────────────────────────────
+function WelcomeMessage() {
+  return (
+    <section className="bg-cream py-16 sm:py-20">
+      <div className="mx-auto max-w-2xl px-6 text-center">
+        <h2 className="font-display text-3xl italic text-ink sm:text-4xl lg:text-5xl">
+          hello! welcome home&nbsp;:)
+        </h2>
+        <p className="mx-auto mt-6 max-w-lg text-base leading-relaxed text-ink/55">
+          we&apos;re a bohemian lifestyle brand for people who like their homes a little
+          imperfect, a little expressive, and full of heart.
+        </p>
+        <p className="mt-5 font-display text-xl italic text-ink/60">
+          come in. stay a while.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+// ─── 3. FESTIVE COLLECTION (admin-configured) ─────────────────────────────────
 function FestiveSection() {
   const { settings } = useStore();
   const festive = settings?.festive;
@@ -83,123 +86,224 @@ function FestiveSection() {
   if (!festive || !festive.enabled || !catId) return null;
   if (!loading && !error && items.length === 0) return null;
   return (
-    <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <div className="bg-softyellow p-6 sm:p-10">
-        <div className="mb-7 flex items-end justify-between gap-4">
-          <div>
-            <p className="eyebrow mb-2 text-ink/40">Limited edition</p>
-            <h2 className="font-display text-3xl text-ink sm:text-4xl" data-testid="festive-title">{festive.title}</h2>
-          </div>
-          <Link to="/category/festive-collections" className="hidden shrink-0 items-center gap-1 border border-border px-4 py-2 text-xs tracking-wide uppercase text-ink/60 transition-colors hover:border-ink hover:text-ink sm:flex">
-            View all
+    <section className="bg-softyellow py-14 sm:py-18">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <h2
+            className="font-display text-2xl italic text-ink sm:text-3xl"
+            data-testid="festive-title"
+          >
+            {festive.title}
+          </h2>
+          <Link
+            to="/category/festive-collections"
+            className="shrink-0 text-sm text-ink/50 hover:text-ink"
+          >
+            view all &rarr;
           </Link>
         </div>
-        <ProductRow items={items} loading={loading} error={error} onRetry={reload} emptyMsg="Assign products to your Festive Collections category in WooCommerce." />
+        <ProductRow
+          items={items}
+          loading={loading}
+          error={error}
+          onRetry={reload}
+          emptyMsg="Assign products to your Festive Collections category in WooCommerce."
+        />
       </div>
     </section>
   );
 }
 
-function ShoppingWorlds() {
-  const worlds = [
-    { slug: "for-you", name: "For You", img: IMAGES.worldForYou, copy: "Clothing, drinkware, caps & everyday carry — made to move with your day." },
-    { slug: "for-your-pet", name: "For Your Pet", img: IMAGES.worldForPet, copy: "Engraved tags & unisex dog shirts, crafted for your most loyal companion." },
-  ];
-  return (
-    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {worlds.map((w) => (
-          <Link key={w.slug} to={`/shop/${w.slug}`} data-testid={`world-card-${w.slug}`} className="group relative overflow-hidden bg-oat transition-all hover:shadow-lg">
-            <div className="absolute inset-0">
-              <img src={w.img} alt={w.name} className="h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.03]" />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/65 via-ink/15 to-transparent" />
-            </div>
-            <div className="relative flex min-h-[360px] flex-col justify-end p-7 sm:min-h-[440px]">
-              <p className="eyebrow mb-2 text-cream/60">Shop the world</p>
-              <h3 className="font-display text-4xl text-cream sm:text-5xl">{w.name}</h3>
-              <p className="mt-2 max-w-xs text-sm text-cream/75">{w.copy}</p>
-              <span className="mt-5 inline-flex w-fit items-center gap-2 border border-cream/50 px-5 py-2.5 text-xs font-medium uppercase tracking-widest text-cream transition-all group-hover:border-cream group-hover:bg-cream/10">
-                Explore <ArrowRight className="h-3.5 w-3.5" />
-              </span>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function ShopByCategory() {
-  const { forYou, forPet, childrenOf } = useStore();
+// ─── 4. CATEGORY ROW (sub-categories, hyppy-style) ────────────────────────────
+function CategoryRow() {
+  const { forYou, forPet, childrenOf, loaded } = useStore();
   const forYouSubs = forYou ? childrenOf(forYou.id) : [];
   const forPetSubs = forPet ? childrenOf(forPet.id) : [];
   const all = [...forYouSubs, ...forPetSubs];
-  return (
-    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <SectionHeader eyebrow="Browse the shelves" title="Shop by Category" />
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {all.map((c, i) => (
-          <Link key={c.id} to={`/category/${c.slug}`} data-testid={`category-tile-${c.slug}`} className="group animate-fade-up" style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}>
-            <div className="overflow-hidden bg-oat transition-all group-hover:shadow-md">
-              <img src={c.image || catImage(c.slug)} alt={c.name} className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
-            </div>
-            <p className="mt-2.5 text-center text-xs font-medium uppercase tracking-wide text-ink/70">{c.name}</p>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
-}
 
-function EditorialBanner() {
+  if (!loaded || all.length === 0) return null;
   return (
-    <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="relative overflow-hidden bg-softyellow px-8 py-14 text-center sm:py-20">
-        <div className="relative mx-auto max-w-2xl">
-          <p className="eyebrow mb-4 text-ink/40">Our story</p>
-          <h2 className="font-display text-4xl text-ink sm:text-5xl">Two of you.<br />One little ritual.</h2>
-          <p className="mt-4 max-w-md mx-auto text-base leading-relaxed text-ink/60">
-            From matching tees to hand-engraved tags, Sojaru is built around the bond between people and their pets. Because the best things are better shared.
-          </p>
-          <Link
-            to="/about"
-            data-testid="editorial-about-btn"
-            className="mt-8 inline-flex items-center gap-2 border border-ink px-7 py-3 text-xs font-medium uppercase tracking-widest text-ink transition-all hover:bg-ink hover:text-cream"
-          >
-            Our Story <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+    <section className="bg-cream py-12 sm:py-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div
+          className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-0 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8"
+        >
+          {all.map((c, i) => (
+            <Link
+              key={c.id}
+              to={`/category/${c.slug}`}
+              data-testid={`category-tile-${c.slug}`}
+              className="group animate-fade-up shrink-0 w-28 sm:w-auto"
+              style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
+            >
+              <div className="overflow-hidden bg-oat">
+                <img
+                  src={c.image || catImage(c.slug)}
+                  alt={c.name}
+                  className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
+                />
+              </div>
+              <p className="mt-2 text-center text-[0.72rem] tracking-wide text-ink/60 group-hover:text-ink">
+                {c.name}
+              </p>
+            </Link>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-function CollectionRow({ slug, eyebrow, title, to }) {
+// ─── GENERIC PRODUCT SECTION (hyppy italic heading style) ─────────────────────
+function ProductSection({ slug, title, to, bg = "bg-cream" }) {
   const { bySlug, loaded } = useStore();
   const cat = bySlug(slug);
-  const { items, loading, error, reload } = useProducts({ category: cat?.id, per_page: 8 }, [cat?.id]);
+  const { items, loading, error, reload } = useProducts(
+    { category: cat?.id, per_page: 8 },
+    [cat?.id]
+  );
   return (
-    <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <SectionHeader eyebrow={eyebrow} title={title} action="View all" to={to} />
-      <ProductRow items={items} loading={loading || !loaded || !cat} error={error} onRetry={reload} emptyMsg="Assign products to this collection in WooCommerce and they'll show up here automatically." />
+    <section className={`${bg} py-12 sm:py-16`}>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-7 flex items-center justify-between gap-4">
+          <h2 className="font-display text-2xl italic text-ink sm:text-3xl">
+            {title}
+          </h2>
+          <Link to={to} className="shrink-0 text-sm text-ink/50 hover:text-ink">
+            view all &rarr;
+          </Link>
+        </div>
+        <ProductRow
+          items={items}
+          loading={loading || !loaded || !cat}
+          error={error}
+          onRetry={reload}
+          emptyMsg="Assign products to this collection in WooCommerce and they&apos;ll show up here."
+        />
+      </div>
     </section>
   );
 }
 
+// ─── 7. SHEER JOY SECTION (on-sale, warm background) ─────────────────────────
+function SheerJoySection() {
+  const { bySlug, loaded } = useStore();
+  const cat = bySlug("on-sale");
+  const { items, loading, error, reload } = useProducts(
+    { category: cat?.id, per_page: 8 },
+    [cat?.id]
+  );
+  if (!loading && !error && items.length === 0) return null;
+  return (
+    <section className="bg-cream">
+      {/* Warm decorative banner */}
+      <div className="relative overflow-hidden bg-terracotta/10 px-6 py-12 text-center sm:py-16">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23b07248' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
+          }}
+        />
+        <h2 className="font-display text-4xl italic text-terracotta sm:text-5xl lg:text-6xl">
+          Sheer Joy ✨
+        </h2>
+        <p className="mt-3 text-sm italic text-ink/45">our sale picks — good things, better prices.</p>
+      </div>
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <ProductRow
+          items={items}
+          loading={loading || !loaded || !cat}
+          error={error}
+          onRetry={reload}
+          emptyMsg="Add products to your on-sale collection in WooCommerce."
+        />
+      </div>
+    </section>
+  );
+}
+
+// ─── 8. OUR STORY ─────────────────────────────────────────────────────────────
+function OurStory() {
+  return (
+    <section className="bg-softyellow py-16 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col items-center gap-10 md:flex-row md:items-center md:gap-16">
+          {/* Illustration */}
+          <div className="flex w-full shrink-0 items-center justify-center md:w-72 lg:w-80">
+            <img
+              src="https://freepngimg.com/download/svg/cartoon/10664-brother-and-sister-in-spring.svg"
+              alt="Brother and sister — the hearts behind Sojaru"
+              className="h-64 w-64 object-contain sm:h-72 sm:w-72"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
+          </div>
+
+          {/* Text */}
+          <div className="flex-1 text-center md:text-left">
+            <p className="eyebrow mb-3 text-ink/40">our story</p>
+            <h2 className="font-display text-3xl italic text-ink sm:text-4xl">
+              a dream, a bond, a beginning.
+            </h2>
+            <div className="mt-5 space-y-4 text-base leading-relaxed text-ink/60">
+              <p>
+                Sojaru was born from a simple, stubborn belief — that one brother had in
+                his sister&apos;s extraordinary talent. She had always created beautiful things,
+                quietly, for the love of it. He saw a world that needed to see them too.
+              </p>
+              <p>
+                So together, they took the leap. Sojaru is their shared dream: a space
+                that feels like home — imperfect, expressive, and full of heart. Every
+                piece is made with the care of someone who grew up believing that beautiful
+                things deserve to be shared.
+              </p>
+              <p className="font-display italic text-ink/70">
+                made with love. built with belief.
+              </p>
+            </div>
+            <Link
+              to="/about"
+              data-testid="editorial-about-btn"
+              className="mt-8 inline-flex items-center gap-2 border border-ink px-6 py-2.5 text-xs font-medium uppercase tracking-widest text-ink transition-all hover:bg-ink hover:text-cream"
+            >
+              Read our story <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── PAGE ────────────────────────────────────────────────────────────────────
 export default function Home() {
-  usePageMeta({ title: "Sojaru — Lifestyle goods for you & your best friend", description: "Sojaru is a modern Indian lifestyle brand offering thoughtfully designed products for people and their pets. Shop clothing, drinkware, pet tags, dog shirts and more." });
+  usePageMeta({
+    title: "Sojaru — Bohemian Lifestyle Brand",
+    description:
+      "A bohemian lifestyle brand for people who like their homes a little imperfect, a little expressive, and full of heart. Shop clothing, accessories, pet goods and more.",
+  });
 
   return (
     <>
       <Hero />
+      <WelcomeMessage />
       <FestiveSection />
-      <ShoppingWorlds />
-      <CollectionRow slug="featured-collection" eyebrow="Hand-picked" title="Featured" to="/category/featured-collection" />
-      <ShopByCategory />
-      <CollectionRow slug="new-arrivals" eyebrow="Just landed" title="New Arrivals" to="/category/new-arrivals" />
-      <CollectionRow slug="on-sale" eyebrow="Limited time" title="On Sale" to="/category/on-sale" />
-      <EditorialBanner />
-      <CollectionRow slug="best-sellers" eyebrow="Crowd favourites" title="Best Sellers" to="/category/best-sellers" />
+      <CategoryRow />
+      <ProductSection
+        slug="featured-collection"
+        title="your favorites are back.."
+        to="/category/featured-collection"
+      />
+      <ProductSection
+        slug="best-sellers"
+        title="Our Best Sellers"
+        to="/category/best-sellers"
+        bg="bg-oat/30"
+      />
+      <SheerJoySection />
+      <OurStory />
     </>
   );
 }
