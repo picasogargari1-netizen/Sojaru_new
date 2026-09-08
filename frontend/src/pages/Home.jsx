@@ -25,7 +25,10 @@ function Hero() {
   }, [heroImages.length]);
 
   return (
-    <section className="relative overflow-hidden h-[54vw] min-h-[260px] max-h-[680px]" data-testid="hero-section">
+    <section
+      className="relative overflow-hidden w-full aspect-[827/1600] sm:aspect-auto sm:h-[90vh] lg:h-[95vh]"
+      data-testid="hero-section"
+    >
       <div className="relative h-full w-full">
         {heroImages.map((img, i) => (
           <img
