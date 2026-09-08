@@ -280,7 +280,9 @@ PRODUCTS = [
 ]
 
 def create_product(p):
-    r = requests.post(f"{WC_URL}/products", json=p, auth=AUTH, timeout=30)
+    # Remove images — WP blocks remote Unsplash uploads; add via WC admin
+    payload = {k: v for k, v in p.items() if k != "images"}
+    r = requests.post(f"{WC_URL}/products", json=payload, auth=AUTH, timeout=30)
     if r.status_code in (200, 201):
         d = r.json()
         print(f"  ✓ Created [{d['id']}] {d['name']} — ₹{d['price']}")

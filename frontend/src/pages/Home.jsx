@@ -352,9 +352,9 @@ export default function Home() {
       <FestiveSection />
       <CategoryRow />
       <ProductSection
-        slug="featured-collection"
+        slug="featured"
         title="your favorites are back.."
-        to="/category/featured-collection"
+        to="/category/featured"
       />
       <ProductSection
         slug="best-sellers"
