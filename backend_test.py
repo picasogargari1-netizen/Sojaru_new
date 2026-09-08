@@ -10,7 +10,7 @@ import requests
 from PIL import Image
 
 # Backend base URL
-BASE_URL = "https://220b0aca-45ec-48d6-9e7d-85dc188c91a7.preview.emergentagent.com/api"
+BASE_URL = "https://design-refresh-615.preview.emergentagent.com/api"
 
 # Admin credentials
 ADMIN_EMAIL = "hello@sojaru.co.in"
@@ -482,7 +482,7 @@ def test_hero_images(admin_token):
         try:
             image_url = uploaded_test_images[0].get("url")
             # URL is relative, need to add base
-            full_url = f"https://220b0aca-45ec-48d6-9e7d-85dc188c91a7.preview.emergentagent.com{image_url}"
+            full_url = f"https://design-refresh-615.preview.emergentagent.com{image_url}"
             
             resp = requests.get(full_url, timeout=30)
             if resp.status_code != 200:

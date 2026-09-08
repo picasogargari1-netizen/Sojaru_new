@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, User, ShoppingBag, Menu, ChevronRight, PawPrint, X, LayoutDashboard } from "lucide-react";
+import { Search, User, ShoppingBag, Menu, ChevronRight, X, LayoutDashboard } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -18,7 +18,7 @@ const marqueeItems = [
 function MegaMenu({ world, subcats, onNavigate }) {
   return (
     <div className="pointer-events-none absolute left-1/2 top-full z-40 w-[min(760px,92vw)] -translate-x-1/2 pt-3 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
-      <div className="overflow-hidden rounded-2xl border border-border bg-cream/95 p-2 shadow-xl backdrop-blur-md">
+      <div className="overflow-hidden border border-border bg-cream/95 p-2 shadow-lg backdrop-blur-md">
         <div className="grid grid-cols-2 gap-1 p-2 sm:grid-cols-3">
           {subcats.map((c) => (
             <Link
@@ -26,7 +26,7 @@ function MegaMenu({ world, subcats, onNavigate }) {
               to={`/category/${c.slug}`}
               onClick={onNavigate}
               data-testid={`mega-link-${c.slug}`}
-              className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-ink transition-colors hover:bg-oat"
+              className="flex items-center justify-between px-4 py-3 text-sm text-ink/70 transition-colors hover:bg-oat hover:text-ink"
             >
               {c.name}
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -36,7 +36,7 @@ function MegaMenu({ world, subcats, onNavigate }) {
         <Link
           to={`/shop/${world.slug}`}
           onClick={onNavigate}
-          className="flex items-center justify-between rounded-xl bg-ink px-4 py-3 text-sm font-semibold text-cream transition-colors hover:bg-terracotta"
+          className="flex items-center justify-between bg-ink px-4 py-3 text-sm font-medium text-cream transition-colors hover:bg-terracotta"
         >
           Shop all {world.name}
           <ChevronRight className="h-4 w-4" />
@@ -58,33 +58,38 @@ export function Header() {
   const forPetSubs = forPet ? childrenOf(forPet.id) : [];
   const marquee = settings?.marquee_texts?.length ? settings.marquee_texts : marqueeItems;
 
-  const navLink = "relative py-2 text-sm font-semibold text-ink transition-colors hover:text-terracotta";
+  const navLink = "relative py-2 text-sm text-ink/70 transition-colors hover:text-ink";
 
   return (
     <>
-      <div className="overflow-hidden bg-ink text-cream">
-        <div className="flex whitespace-nowrap py-2 animate-marquee">
+      {/* Announcement Marquee — light warm band like hyppy */}
+      <div className="overflow-hidden border-b border-border bg-softyellow">
+        <div className="flex whitespace-nowrap py-2.5 animate-marquee">
           {[...marquee, ...marquee, ...marquee, ...marquee].map((t, i) => (
-            <span key={i} className="mx-6 flex items-center gap-2 text-[0.72rem] font-medium uppercase tracking-[0.18em]">
-              <PawPrint className="h-3 w-3 text-amber" /> {t}
+            <span
+              key={i}
+              className="mx-8 flex items-center gap-2 text-[0.72rem] italic text-ink/50"
+              style={{ fontFamily: '"DM Serif Display", serif' }}
+            >
+              {t} <span className="not-italic">·</span>
             </span>
           ))}
         </div>
       </div>
 
-      <header className="sticky top-0 z-50 border-b border-border bg-cream/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-50 border-b border-border bg-cream/90 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 lg:hidden">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <button data-testid="mobile-menu-trigger" aria-label="Open menu" className="p-1">
-                  <Menu className="h-6 w-6 text-ink" />
+                  <Menu className="h-5 w-5 text-ink" />
                 </button>
               </SheetTrigger>
               <SheetContent side="left" className="w-[86vw] max-w-sm overflow-y-auto bg-cream p-0">
                 <SheetTitle className="sr-only">Menu</SheetTitle>
                 <div className="flex items-center justify-between border-b border-border p-5">
-                  <img src="/sojaru-logo.png" alt="Sojaru" className="h-10 w-auto" />
+                  <img src="/sojaru-logo.png" alt="Sojaru" className="h-9 w-auto" />
                   <button onClick={() => setMobileOpen(false)} aria-label="Close"><X className="h-5 w-5" /></button>
                 </div>
                 <MobileNav
@@ -97,7 +102,7 @@ export function Header() {
           </div>
 
           <Link to="/" data-testid="logo-link" className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
-            <img src="/sojaru-logo.png" alt="Sojaru" className="h-11 w-auto sm:h-12" />
+            <img src="/sojaru-logo.png" alt="Sojaru" className="h-10 w-auto sm:h-11" />
           </Link>
 
           <nav className="hidden items-center gap-7 lg:flex">
@@ -120,20 +125,20 @@ export function Header() {
             <Link to="/contact" className={navLink} data-testid="nav-contact">Contact</Link>
           </nav>
 
-          <div className="flex items-center gap-1 sm:gap-3">
-            <button data-testid="header-search-button" aria-label="Search" onClick={() => setSearchOpen(true)} className="rounded-full p-2 text-ink transition-colors hover:bg-oat">
-              <Search className="h-[1.15rem] w-[1.15rem]" />
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button data-testid="header-search-button" aria-label="Search" onClick={() => setSearchOpen(true)} className="rounded-full p-2 text-ink/60 transition-colors hover:bg-oat hover:text-ink">
+              <Search className="h-[1.1rem] w-[1.1rem]" />
             </button>
             {user?.is_admin && (
-              <Link to="/admin" data-testid="header-admin-button" aria-label="Admin dashboard" title="Storefront Manager" className="rounded-full p-2 text-ink transition-colors hover:bg-yellow">
-                <LayoutDashboard className="h-[1.15rem] w-[1.15rem]" />
+              <Link to="/admin" data-testid="header-admin-button" aria-label="Admin dashboard" title="Storefront Manager" className="rounded-full p-2 text-ink/60 transition-colors hover:bg-oat hover:text-ink">
+                <LayoutDashboard className="h-[1.1rem] w-[1.1rem]" />
               </Link>
             )}
-            <Link to={user ? "/account" : "/login"} data-testid="header-account-button" aria-label="Account" className="rounded-full p-2 text-ink transition-colors hover:bg-oat">
-              <User className="h-[1.15rem] w-[1.15rem]" />
+            <Link to={user ? "/account" : "/login"} data-testid="header-account-button" aria-label="Account" className="rounded-full p-2 text-ink/60 transition-colors hover:bg-oat hover:text-ink">
+              <User className="h-[1.1rem] w-[1.1rem]" />
             </Link>
-            <button data-testid="header-cart-button" aria-label="Cart" onClick={() => setOpen(true)} className="relative rounded-full p-2 text-ink transition-colors hover:bg-oat">
-              <ShoppingBag className="h-[1.15rem] w-[1.15rem]" />
+            <button data-testid="header-cart-button" aria-label="Cart" onClick={() => setOpen(true)} className="relative rounded-full p-2 text-ink/60 transition-colors hover:bg-oat hover:text-ink">
+              <ShoppingBag className="h-[1.1rem] w-[1.1rem]" />
               {count > 0 && (
                 <span data-testid="cart-count-badge" className="absolute -right-0.5 -top-0.5 flex h-[1.1rem] min-w-[1.1rem] items-center justify-center rounded-full bg-terracotta px-1 text-[0.62rem] font-bold text-white">
                   {count}
@@ -148,27 +153,24 @@ export function Header() {
   );
 }
 
-function MobileNav({ forYou, forPet, forYouSubs, forPetSubs, close }) {
-  const [section, setSection] = useState(null);
-  const navigate = useNavigate();
-  const go = (path) => { close(); navigate(path); };
-  const Group = ({ world, subs, id }) => (
+function MobileNavGroup({ world, subs, id, section, setSection, go }) {
+  return (
     <div className="border-b border-border">
       <button
         onClick={() => setSection(section === id ? null : id)}
-        className="flex w-full items-center justify-between px-5 py-4 text-left text-base font-semibold text-ink"
+        className="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-medium text-ink"
         data-testid={`mobile-group-${id}`}
       >
         {world?.name}
-        <ChevronRight className={`h-5 w-5 transition-transform ${section === id ? "rotate-90" : ""}`} />
+        <ChevronRight className={`h-4 w-4 transition-transform ${section === id ? "rotate-90" : ""}`} />
       </button>
       {section === id && (
         <div className="bg-oat/50 pb-2">
-          <button onClick={() => go(`/shop/${world.slug}`)} className="block w-full px-8 py-2.5 text-left text-sm font-semibold text-terracotta">
+          <button onClick={() => go(`/shop/${world.slug}`)} className="block w-full px-8 py-2.5 text-left text-sm font-medium text-terracotta">
             Shop all {world.name}
           </button>
           {subs.map((c) => (
-            <button key={c.id} onClick={() => go(`/category/${c.slug}`)} className="block w-full px-8 py-2.5 text-left text-sm text-ink" data-testid={`mobile-link-${c.slug}`}>
+            <button key={c.id} onClick={() => go(`/category/${c.slug}`)} className="block w-full px-8 py-2.5 text-left text-sm text-ink/70" data-testid={`mobile-link-${c.slug}`}>
               {c.name}
             </button>
           ))}
@@ -176,15 +178,21 @@ function MobileNav({ forYou, forPet, forYouSubs, forPetSubs, close }) {
       )}
     </div>
   );
+}
+
+function MobileNav({ forYou, forPet, forYouSubs, forPetSubs, close }) {
+  const [section, setSection] = useState(null);
+  const navigate = useNavigate();
+  const go = (path) => { close(); navigate(path); };
   return (
     <div className="pb-10">
-      <button onClick={() => go("/")} className="block w-full border-b border-border px-5 py-4 text-left text-base font-semibold">Home</button>
-      {forYou && <Group world={forYou} subs={forYouSubs} id="you" />}
-      {forPet && <Group world={forPet} subs={forPetSubs} id="pet" />}
-      <button onClick={() => go("/category/new-arrivals")} className="block w-full border-b border-border px-5 py-4 text-left text-base font-semibold">New Arrivals</button>
-      <button onClick={() => go("/category/gifting")} className="block w-full border-b border-border px-5 py-4 text-left text-base font-semibold">Gifting</button>
-      <button onClick={() => go("/about")} className="block w-full border-b border-border px-5 py-4 text-left text-base font-semibold">About Us</button>
-      <button onClick={() => go("/contact")} className="block w-full border-b border-border px-5 py-4 text-left text-base font-semibold">Contact</button>
+      <button onClick={() => go("/")} className="block w-full border-b border-border px-5 py-4 text-left text-sm font-medium text-ink">Home</button>
+      {forYou && <MobileNavGroup world={forYou} subs={forYouSubs} id="you" section={section} setSection={setSection} go={go} />}
+      {forPet && <MobileNavGroup world={forPet} subs={forPetSubs} id="pet" section={section} setSection={setSection} go={go} />}
+      <button onClick={() => go("/category/new-arrivals")} className="block w-full border-b border-border px-5 py-4 text-left text-sm font-medium text-ink">New Arrivals</button>
+      <button onClick={() => go("/category/gifting")} className="block w-full border-b border-border px-5 py-4 text-left text-sm font-medium text-ink">Gifting</button>
+      <button onClick={() => go("/about")} className="block w-full border-b border-border px-5 py-4 text-left text-sm font-medium text-ink">About Us</button>
+      <button onClick={() => go("/contact")} className="block w-full border-b border-border px-5 py-4 text-left text-sm font-medium text-ink">Contact</button>
     </div>
   );
 }

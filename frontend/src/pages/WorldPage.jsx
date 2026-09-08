@@ -41,7 +41,7 @@ export default function WorldPage() {
         </div>
         <div className="relative mx-auto flex max-w-7xl flex-col justify-center px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
           <span className="eyebrow animate-fade-up text-cream/80">Sojaru · {isPet ? "For Your Pet" : "For You"}</span>
-          <h1 className="mt-3 max-w-xl animate-fade-up font-display text-4xl font-semibold text-cream sm:text-5xl lg:text-6xl" style={{ animationDelay: "80ms" }}>
+          <h1 className="mt-3 max-w-xl animate-fade-up font-display text-4xl text-cream sm:text-5xl lg:text-6xl" style={{ animationDelay: "80ms" }}>
             {world?.name}
           </h1>
           <p className="mt-4 max-w-md animate-fade-up text-base text-cream/85" style={{ animationDelay: "160ms" }}>
@@ -54,11 +54,11 @@ export default function WorldPage() {
         <SectionHeader eyebrow="Categories" title="Browse the collection" />
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {subs.map((c, i) => (
-            <Link key={c.id} to={`/category/${c.slug}`} data-testid={`world-cat-${c.slug}`} className="group relative animate-fade-up overflow-hidden rounded-2xl bg-oat" style={{ animationDelay: `${i * 50}ms` }}>
+            <Link key={c.id} to={`/category/${c.slug}`} data-testid={`world-cat-${c.slug}`} className="group relative animate-fade-up overflow-hidden bg-oat" style={{ animationDelay: `${i * 50}ms` }}>
               <img src={c.image || catImage(c.slug)} alt={c.name} className="aspect-[4/3] w-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-ink/60 to-transparent" />
               <div className="absolute bottom-0 flex w-full items-center justify-between p-4">
-                <span className="font-display text-lg font-semibold text-cream">{c.name}</span>
+                <span className="font-display text-lg text-cream">{c.name}</span>
                 <ArrowRight className="h-4 w-4 text-cream transition-transform group-hover:translate-x-1" />
               </div>
             </Link>

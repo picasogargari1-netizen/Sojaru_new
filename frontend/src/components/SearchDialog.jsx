@@ -42,7 +42,7 @@ export function SearchDialog({ open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="top-[12%] max-w-xl translate-y-0 gap-0 overflow-hidden rounded-2xl border-border bg-cream p-0" data-testid="search-dialog">
+      <DialogContent className="top-[12%] max-w-xl translate-y-0 gap-0 overflow-hidden border-border bg-cream p-0" data-testid="search-dialog">
         <DialogTitle className="sr-only">Search Sojaru</DialogTitle>
         <div className="flex items-center gap-3 border-b border-border px-5 py-4">
           <Search className="h-5 w-5 text-muted-foreground" />

@@ -109,9 +109,9 @@ export default function CategoryPage({ special }) {
       <div>
         <h4 className="mb-3 text-sm font-bold text-ink">Price</h4>
         <div className="flex items-center gap-2">
-          <input value={priceMin} onChange={(e) => setPriceMin(e.target.value)} inputMode="numeric" placeholder="Min" data-testid="filter-price-min" className="w-full rounded-lg border border-border bg-cream px-3 py-2 text-sm outline-none focus:border-ink" />
+          <input value={priceMin} onChange={(e) => setPriceMin(e.target.value)} inputMode="numeric" placeholder="Min" data-testid="filter-price-min" className="w-full border border-border bg-cream px-3 py-2 text-sm outline-none focus:border-ink" />
           <span className="text-muted-foreground">–</span>
-          <input value={priceMax} onChange={(e) => setPriceMax(e.target.value)} inputMode="numeric" placeholder="Max" data-testid="filter-price-max" className="w-full rounded-lg border border-border bg-cream px-3 py-2 text-sm outline-none focus:border-ink" />
+          <input value={priceMax} onChange={(e) => setPriceMax(e.target.value)} inputMode="numeric" placeholder="Max" data-testid="filter-price-max" className="w-full border border-border bg-cream px-3 py-2 text-sm outline-none focus:border-ink" />
         </div>
       </div>
       {availSizes.length > 0 && (
@@ -119,7 +119,7 @@ export default function CategoryPage({ special }) {
           <h4 className="mb-3 text-sm font-bold text-ink">Size</h4>
           <div className="flex flex-wrap gap-2">
             {availSizes.map((s) => (
-              <button key={s} onClick={() => toggle(sizes, setSizes, s)} data-testid={`filter-size-${s}`} className={`rounded-full border px-3.5 py-1.5 text-sm transition-colors ${sizes.includes(s) ? "border-ink bg-ink text-cream" : "border-border text-ink hover:border-ink"}`}>{s}</button>
+              <button key={s} onClick={() => toggle(sizes, setSizes, s)} data-testid={`filter-size-${s}`} className={`border px-3.5 py-1.5 text-sm transition-colors ${sizes.includes(s) ? "border-ink bg-ink text-cream" : "border-border text-ink hover:border-ink"}`}>{s}</button>
             ))}
           </div>
         </div>
@@ -129,7 +129,7 @@ export default function CategoryPage({ special }) {
           <h4 className="mb-3 text-sm font-bold text-ink">Color</h4>
           <div className="flex flex-wrap gap-2">
             {availColors.map((c) => (
-              <button key={c} onClick={() => toggle(colors, setColors, c)} data-testid={`filter-color-${c}`} className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm transition-colors ${colors.includes(c) ? "border-ink bg-ink text-cream" : "border-border text-ink hover:border-ink"}`}>
+              <button key={c} onClick={() => toggle(colors, setColors, c)} data-testid={`filter-color-${c}`} className={`flex items-center gap-1.5 border px-3.5 py-1.5 text-sm transition-colors ${colors.includes(c) ? "border-ink bg-ink text-cream" : "border-border text-ink hover:border-ink"}`}>
                 {colors.includes(c) && <Check className="h-3.5 w-3.5" />} {c}
               </button>
             ))}
@@ -152,7 +152,7 @@ export default function CategoryPage({ special }) {
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="border-b border-border pb-8">
         <p className="eyebrow text-terracotta">Sojaru</p>
-        <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">{title}</h1>
+        <h1 className="mt-2 font-display text-4xl text-ink sm:text-5xl">{title}</h1>
         {desc && <p className="mt-3 max-w-2xl text-base text-muted-foreground" dangerouslySetInnerHTML={{ __html: desc }} />}
       </div>
 
@@ -166,7 +166,7 @@ export default function CategoryPage({ special }) {
             <div className="lg:hidden">
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="rounded-full border-ink" data-testid="mobile-filter-trigger">
+                  <Button variant="outline" className="border-ink" data-testid="mobile-filter-trigger">
                     <SlidersHorizontal className="mr-2 h-4 w-4" /> Filters {activeCount > 0 && `(${activeCount})`}
                   </Button>
                 </SheetTrigger>
@@ -178,7 +178,7 @@ export default function CategoryPage({ special }) {
             </div>
             <p className="hidden text-sm text-muted-foreground sm:block">{filtered.length} {filtered.length === 1 ? "product" : "products"}</p>
             <Select value={special === "new-arrivals" ? "newest" : sort} onValueChange={setSort} disabled={special === "new-arrivals"}>
-              <SelectTrigger className="w-52 rounded-full border-border" data-testid="sort-select"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-52 border-border" data-testid="sort-select"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {SORTS.map((s) => <SelectItem key={s.v} value={s.v} data-testid={`sort-${s.v}`}>{s.label}</SelectItem>)}
               </SelectContent>
@@ -194,7 +194,7 @@ export default function CategoryPage({ special }) {
               </div>
               {page < pages && (
                 <div className="mt-12 flex justify-center">
-                  <Button onClick={() => setPage((p) => p + 1)} disabled={loading} variant="outline" className="h-12 rounded-full border-ink px-8 font-semibold hover:bg-ink hover:text-cream" data-testid="load-more">
+                  <Button onClick={() => setPage((p) => p + 1)} disabled={loading} variant="outline" className="h-12 border-ink px-10 font-medium tracking-wide hover:bg-ink hover:text-cream" data-testid="load-more">
                     {loading ? "Loading..." : "Load more"}
                   </Button>
                 </div>

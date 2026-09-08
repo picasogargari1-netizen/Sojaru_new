@@ -23,8 +23,8 @@ export default function SearchPage() {
             testid="search-page-prompt"
             action={
               <div className="mt-5 flex gap-3">
-                <Button asChild className="rounded-full bg-ink text-cream hover:bg-terracotta"><Link to="/shop/for-you">Shop For You</Link></Button>
-                <Button asChild variant="outline" className="rounded-full border-ink"><Link to="/shop/for-your-pet">Shop For Your Pet</Link></Button>
+                <Button asChild className="bg-ink text-cream hover:bg-terracotta"><Link to="/shop/for-you">Shop For You</Link></Button>
+                <Button asChild variant="outline" className="border border-ink"><Link to="/shop/for-your-pet">Shop For Your Pet</Link></Button>
               </div>
             }
           />
@@ -49,8 +49,8 @@ export default function SearchPage() {
             testid="search-page-empty"
             action={
               <div className="mt-5 flex gap-3">
-                <Button asChild className="rounded-full bg-ink text-cream hover:bg-terracotta"><Link to="/shop/for-you">Shop For You</Link></Button>
-                <Button asChild variant="outline" className="rounded-full border-ink"><Link to="/shop/for-your-pet">Shop For Your Pet</Link></Button>
+                <Button asChild className="bg-ink text-cream hover:bg-terracotta"><Link to="/shop/for-you">Shop For You</Link></Button>
+                <Button asChild variant="outline" className="border border-ink"><Link to="/shop/for-your-pet">Shop For Your Pet</Link></Button>
               </div>
             }
           />

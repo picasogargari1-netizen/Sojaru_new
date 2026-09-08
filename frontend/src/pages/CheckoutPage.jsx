@@ -98,15 +98,15 @@ export default function CheckoutPage() {
         <CheckCircle2 className="mx-auto h-16 w-16 text-matcha" strokeWidth={1.5} />
         <h1 className="mt-6 font-display text-4xl font-semibold text-ink">Thank you!</h1>
         <p className="mt-3 text-muted-foreground">Your Sojaru order <span className="font-mono font-semibold text-ink">#{confirmed.id}</span> has been received. You and your best friend are going to love it.</p>
-        <div className="mt-6 rounded-2xl bg-oat/60 p-6 text-left">
+        <div className="mt-6 bg-oat/60 p-6 text-left">
           <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Order total</span><span className="font-mono text-lg font-semibold text-ink">{money(confirmed.total)}</span></div>
           <p className="mt-1 text-xs text-muted-foreground">Status: {confirmed.status}</p>
         </div>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Button asChild className="h-12 rounded-full bg-ink px-7 text-cream hover:bg-terracotta">
+          <Button asChild className="h-12 bg-ink px-7 text-cream hover:bg-terracotta">
             <a href={confirmed.payment_url} target="_blank" rel="noopener noreferrer" data-testid="complete-payment-button">Complete Payment Securely <ArrowRight className="ml-2 h-4 w-4" /></a>
           </Button>
-          <Button asChild variant="outline" className="h-12 rounded-full border-ink px-7"><Link to="/">Continue shopping</Link></Button>
+          <Button asChild variant="outline" className="h-12 border border-ink px-7"><Link to="/">Continue shopping</Link></Button>
         </div>
         <p className="mt-4 text-xs text-muted-foreground">Payment is processed securely by your WooCommerce store's configured gateways.</p>
       </div>
@@ -119,12 +119,12 @@ export default function CheckoutPage() {
         <ShoppingBag className="mx-auto h-12 w-12 text-matcha" strokeWidth={1.5} />
         <h1 className="mt-5 font-display text-3xl text-ink">Your bag is empty</h1>
         <p className="mt-2 text-muted-foreground">Add something lovely before checking out.</p>
-        <Button asChild className="mt-6 rounded-full bg-ink text-cream hover:bg-terracotta"><Link to="/">Start shopping</Link></Button>
+        <Button asChild className="mt-6 bg-ink text-cream hover:bg-terracotta"><Link to="/">Start shopping</Link></Button>
       </div>
     );
   }
 
-  const field = "mt-1.5 rounded-xl border-border bg-cream";
+  const field = "mt-1.5 border-border bg-cream";
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
@@ -160,7 +160,7 @@ export default function CheckoutPage() {
         </div>
 
         <div className="lg:col-span-2">
-          <div className="sticky top-28 rounded-2xl border border-border bg-oat/40 p-6">
+          <div className="sticky top-28 border border-border bg-oat/40 p-6">
             <h2 className="font-display text-xl font-semibold text-ink">Order summary</h2>
             <div className="mt-4 max-h-64 space-y-4 overflow-y-auto">
               {items.map((i) => (
@@ -181,9 +181,9 @@ export default function CheckoutPage() {
             <div className="mt-5 flex gap-2">
               <div className="relative flex-1">
                 <Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input value={coupon} onChange={(e) => setCoupon(e.target.value)} placeholder="Coupon code" className="rounded-xl border-border bg-cream pl-9" data-testid="checkout-coupon-input" />
+                <Input value={coupon} onChange={(e) => setCoupon(e.target.value)} placeholder="Coupon code" className="border-border bg-cream pl-9" data-testid="checkout-coupon-input" />
               </div>
-              <Button type="button" onClick={applyCoupon} disabled={couponLoading} variant="outline" className="rounded-xl border-ink" data-testid="checkout-coupon-apply">
+              <Button type="button" onClick={applyCoupon} disabled={couponLoading} variant="outline" className="border-ink" data-testid="checkout-coupon-apply">
                 {couponLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
               </Button>
             </div>
@@ -195,7 +195,7 @@ export default function CheckoutPage() {
               <div className="flex justify-between border-t border-border pt-3 text-base font-semibold"><span className="text-ink">Total</span><span className="font-mono text-ink" data-testid="checkout-total">{money(total)}</span></div>
             </div>
 
-            <Button type="submit" disabled={placing} className="mt-5 h-12 w-full rounded-full bg-ink text-base font-semibold text-cream transition-all hover:bg-terracotta" data-testid="place-order-button">
+            <Button type="submit" disabled={placing} className="mt-5 h-12 w-full bg-ink text-base font-semibold text-cream transition-all hover:bg-terracotta" data-testid="place-order-button">
               {placing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Placing order...</> : <><Lock className="mr-2 h-4 w-4" /> Place order</>}
             </Button>
             <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground"><Lock className="h-3 w-3" /> Secured by your WooCommerce store</p>

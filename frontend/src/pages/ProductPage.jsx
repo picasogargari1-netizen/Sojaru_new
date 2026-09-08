@@ -151,13 +151,13 @@ export default function ProductPage() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-14">
         {/* Gallery */}
         <div className="lg:sticky lg:top-28 lg:self-start">
-          <div className="overflow-hidden rounded-2xl bg-oat">
+          <div className="overflow-hidden bg-oat">
             <img src={gallery[activeImg]?.src} alt={gallery[activeImg]?.alt || product.name} className="aspect-square w-full object-cover" data-testid="pdp-main-image" />
           </div>
           {gallery.length > 1 && (
             <div className="mt-3 flex gap-3">
               {gallery.map((img, i) => (
-                <button key={i} onClick={() => setActiveImg(i)} className={`h-20 w-16 overflow-hidden rounded-lg border-2 ${activeImg === i ? "border-ink" : "border-transparent"}`} data-testid={`pdp-thumb-${i}`}>
+                <button key={i} onClick={() => setActiveImg(i)} className={`h-20 w-16 overflow-hidden border-2 ${activeImg === i ? "border-ink" : "border-transparent"}`} data-testid={`pdp-thumb-${i}`}>
                   <img src={img.src} alt="" className="h-full w-full object-cover" />
                 </button>
               ))}
@@ -168,7 +168,7 @@ export default function ProductPage() {
         {/* Info */}
         <div>
           <p className="eyebrow text-terracotta">{product.categories?.[0]?.name || "Sojaru"}</p>
-          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl" data-testid="pdp-title">{product.name}</h1>
+          <h1 className="mt-2 font-display text-3xl text-ink sm:text-4xl" data-testid="pdp-title">{product.name}</h1>
 
           {Number(product.rating_count) > 0 && (
             <div className="mt-2 flex items-center gap-1 text-sm text-ink/70">
@@ -183,7 +183,7 @@ export default function ProductPage() {
             {!showFrom && onSale && Number(regPrice) > Number(price) && (
               <>
                 <span className="text-lg text-muted-foreground line-through">{money(regPrice)}</span>
-                <span className="rounded-full bg-terracotta/10 px-2.5 py-1 text-xs font-bold text-terracotta">Save {discountPct({ regular_price: regPrice, sale_price: price })}%</span>
+                <span className="bg-terracotta/10 px-2.5 py-1 text-xs font-semibold text-terracotta">Save {discountPct({ regular_price: regPrice, sale_price: price })}%</span>
               </>
             )}
           </div>
@@ -206,7 +206,7 @@ export default function ProductPage() {
                       disabled={!avail}
                       onClick={() => setSelected((s) => ({ ...s, [attr.name]: opt }))}
                       data-testid={`variation-${attr.name}-${opt}`}
-                      className={`min-w-[3rem] rounded-full border px-4 py-2 text-sm font-medium transition-all ${active ? "border-ink bg-ink text-cream" : "border-border text-ink hover:border-ink"} ${!avail ? "cursor-not-allowed opacity-30 line-through" : ""}`}
+                      className={`min-w-[3rem] border px-4 py-2 text-sm font-medium transition-all ${active ? "border-ink bg-ink text-cream" : "border-border text-ink hover:border-ink"} ${!avail ? "cursor-not-allowed opacity-30 line-through" : ""}`}
                     >
                       {active && <Check className="mr-1 inline h-3.5 w-3.5" />}{opt}
                     </button>
@@ -227,21 +227,21 @@ export default function ProductPage() {
 
           {/* Qty + actions */}
           <div className="mt-6 flex items-center gap-3">
-            <div className="flex items-center rounded-full border border-border">
+            <div className="flex items-center border border-border">
               <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="p-3" aria-label="Decrease" data-testid="pdp-qty-dec"><Minus className="h-4 w-4" /></button>
               <span className="w-8 text-center font-mono" data-testid="pdp-qty">{qty}</span>
               <button onClick={() => setQty((q) => q + 1)} className="p-3" aria-label="Increase" data-testid="pdp-qty-inc"><Plus className="h-4 w-4" /></button>
             </div>
-            <Button onClick={addToCart} disabled={needsSelection || outOfStock} data-testid="pdp-add-to-cart-button" className="h-13 flex-1 rounded-full bg-ink py-3.5 text-base font-semibold text-cream transition-all hover:bg-terracotta disabled:opacity-50">
+            <Button onClick={addToCart} disabled={needsSelection || outOfStock} data-testid="pdp-add-to-cart-button" className="h-13 flex-1 bg-ink py-3.5 text-base font-semibold text-cream transition-all hover:bg-terracotta disabled:opacity-50">
               <ShoppingBag className="mr-2 h-5 w-5" /> {outOfStock ? "Sold out" : needsSelection ? "Select options" : "Add to Bag"}
             </Button>
           </div>
-          <Button onClick={buyNow} disabled={needsSelection || outOfStock} variant="outline" data-testid="pdp-buy-now-button" className="mt-3 h-13 w-full rounded-full border-ink py-3.5 text-base font-semibold text-ink transition-all hover:bg-ink hover:text-cream disabled:opacity-50">
+          <Button onClick={buyNow} disabled={needsSelection || outOfStock} variant="outline" data-testid="pdp-buy-now-button" className="mt-3 h-13 w-full border-ink py-3.5 text-base font-semibold text-ink transition-all hover:bg-ink hover:text-cream disabled:opacity-50">
             Buy Now
           </Button>
 
           {/* Trust icons */}
-          <div className="mt-6 grid grid-cols-3 gap-3 rounded-2xl bg-oat/60 p-4 text-center text-xs text-ink/70">
+          <div className="mt-6 grid grid-cols-3 gap-3 bg-oat/60 p-4 text-center text-xs text-ink/70">
             <div className="flex flex-col items-center gap-1"><Truck className="h-5 w-5 text-matcha" /> Free ship ₹1,499+</div>
             <div className="flex flex-col items-center gap-1"><RefreshCw className="h-5 w-5 text-matcha" /> 30-day returns</div>
             <div className="flex flex-col items-center gap-1"><Shield className="h-5 w-5 text-matcha" /> Secure checkout</div>
@@ -275,7 +275,7 @@ export default function ProductPage() {
       {/* Related */}
       {related.length > 0 && (
         <section className="mt-20">
-          <h2 className="mb-8 font-display text-3xl font-semibold tracking-tight text-ink">You may also love</h2>
+          <h2 className="mb-8 font-display text-3xl text-ink">You may also love</h2>
           <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4">
             {related.slice(0, 4).map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
           </div>
