@@ -132,7 +132,9 @@ function WarmMarquee() {
   );
 }
 
-// ─── 4. CATEGORY BENTO GRID (hyppy-style 4-col portrait grid) ─────────────────
+// ─── 4. CATEGORY BENTO GRID (text overlay, landscape, varying col spans) ──────
+const BENTO_SPANS = [2, 2, 1, 2, 1, 2, 2, 3, 2, 3, 2, 2, 1];
+
 function CategoryRow() {
   const { forYou, forPet, childrenOf, loaded, settings } = useStore();
   const forYouSubs = forYou ? childrenOf(forYou.id) : [];
@@ -141,37 +143,47 @@ function CategoryRow() {
   const adminCatImages = settings?.category_images || {};
 
   if (!loaded || all.length === 0) return null;
+
   return (
     <section className="bg-cream py-8 sm:py-10" data-testid="category-bento-grid">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div
-          style={{ gap: "8px" }}
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
-        >
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" style={{ gap: "8px" }}>
           {all.map((c, i) => {
-            // Priority: 1) Admin-uploaded image 2) WooCommerce image 3) hardcoded fallback
+            const span = BENTO_SPANS[i % BENTO_SPANS.length];
+            // Tailwind safelist — keep as literals so purger keeps them
+            const spanCls =
+              span === 3 ? "lg:col-span-3" : span === 2 ? "lg:col-span-2" : "lg:col-span-1";
             const imgSrc = adminCatImages[c.slug]
               ? `${process.env.REACT_APP_BACKEND_URL}${adminCatImages[c.slug]}`
-              : (c.image || catImage(c.slug));
+              : c.image || catImage(c.slug);
+
             return (
               <Link
                 key={c.id}
                 to={`/category/${c.slug}`}
                 data-testid={`category-tile-${c.slug}`}
-                className="group animate-fade-up"
-                style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
+                className={`group relative col-span-1 overflow-hidden ${spanCls}`}
               >
-                <div className="overflow-hidden bg-oat">
+                {/* Landscape image */}
+                <div className="relative aspect-[4/3] overflow-hidden">
                   <img
                     src={imgSrc}
                     alt={c.name}
-                    className="aspect-[4/5] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
                     onError={(e) => { e.target.src = catImage(c.slug); }}
                   />
+                  {/* Subtle vignette so white text is always readable */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
+                  {/* Category name overlaid and centered */}
+                  <div className="absolute inset-0 flex items-center justify-center px-3">
+                    <p
+                      className="text-center font-display text-lg text-white sm:text-xl lg:text-2xl"
+                      style={{ textShadow: "0 1px 6px rgba(0,0,0,0.55), 0 0 2px rgba(0,0,0,0.3)" }}
+                    >
+                      {c.name}
+                    </p>
+                  </div>
                 </div>
-                <p className="mt-2 text-center font-display text-lg text-ink group-hover:text-terracotta transition-colors">
-                  {c.name}
-                </p>
               </Link>
             );
           })}

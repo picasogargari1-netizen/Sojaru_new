@@ -214,7 +214,7 @@ function CategoryImagesManager() {
   return (
     <div>
       <p className="text-sm text-muted-foreground">
-        Upload a custom portrait image (4:5 ratio recommended) for each sub-category.
+        Upload a custom <strong>landscape image (4:3 ratio recommended)</strong> for each sub-category.
         New sub-categories added in WooCommerce appear here automatically.
         Images are served at highest priority over WooCommerce images.
       </p>
@@ -227,8 +227,8 @@ function CategoryImagesManager() {
           const isBusy = busy[cat.slug];
           return (
             <div key={cat.id} data-testid={`cat-img-tile-${cat.slug}`} className="group relative flex flex-col overflow-hidden border-2 border-ink">
-              {/* Image area */}
-              <div className="relative aspect-[4/5] w-full bg-oat">
+              {/* Image area — landscape 4:3 to match homepage */}
+              <div className="relative aspect-[4/3] w-full bg-oat">
                 {displayImg ? (
                   <img
                     src={displayImg}

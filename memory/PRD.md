@@ -34,7 +34,7 @@ Build "Sojaru", a custom headless storefront on top of a live WordPress + WooCom
 - Warm italic "welcome home ✿ come on in ✿ stay a while" marquee below hero
 - "hello! welcome home :)" welcome section with brand message
 - Festive Collections section (admin-configured category, title, enabled toggle)
-- Sub-categories BENTO GRID: 4-column portrait (4:5 ratio, 8px gap) grid matching hyppy.in exactly — large serif category names below images
+- Sub-categories BENTO GRID: 5-column grid on desktop with varying spans [2,2,1 / 2,1,2 / 2,3 pattern], landscape (4:3) images, white DM Serif text OVERLAID on images with subtle bottom gradient — matches hyppy.in reference exactly. 2-col on mobile.
 - "your favorites are back.." section (products from featured-collection WooCommerce category)
 - "Our Best Sellers" section (products from best-sellers category)
 - "Sheer Joy" section (products from on-sale category, terracotta heading)
