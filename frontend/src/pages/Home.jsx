@@ -42,12 +42,12 @@ function Hero() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30" />
       </div>
 
-      {/* Hero text overlay from admin */}
+      {/* Hero text overlay from admin — bottom-left */}
       {heroText && (
-        <div className="absolute inset-0 flex items-center justify-center px-6" data-testid="hero-text-overlay">
+        <div className="absolute bottom-8 left-6 sm:bottom-10 sm:left-10 lg:bottom-12 lg:left-14" data-testid="hero-text-overlay">
           <p
-            className="max-w-2xl text-center font-display text-3xl italic text-white sm:text-4xl lg:text-5xl"
-            style={{ textShadow: "0 2px 12px rgba(0,0,0,0.45)" }}
+            className="max-w-lg font-display text-2xl italic text-white sm:text-3xl lg:text-4xl"
+            style={{ textShadow: "0 2px 12px rgba(0,0,0,0.5)" }}
           >
             {heroText}
           </p>
