@@ -90,16 +90,16 @@ function FestiveSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-end justify-between gap-4">
           <h2
-            className="font-display text-2xl italic text-ink sm:text-3xl"
+            className="font-display text-2xl italic text-ink sm:text-3xl lg:text-4xl"
             data-testid="festive-title"
           >
             {festive.title}
           </h2>
           <Link
             to="/category/festive-collections"
-            className="shrink-0 text-sm text-ink/50 hover:text-ink"
+            className="shrink-0 text-sm italic text-ink/45 hover:text-ink underline underline-offset-4"
           >
-            view all &rarr;
+            view all
           </Link>
         </div>
         <ProductRow
@@ -114,7 +114,25 @@ function FestiveSection() {
   );
 }
 
-// ─── 4. CATEGORY ROW (sub-categories, hyppy-style) ────────────────────────────
+// ─── 3b. WARM ITALIC MARQUEE (after hero, like hyppy.in) ──────────────────────
+function WarmMarquee() {
+  return (
+    <div className="overflow-hidden bg-softyellow py-3 border-y border-border">
+      <div className="flex whitespace-nowrap animate-marquee">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <span
+            key={i}
+            className="mx-8 font-display text-sm italic text-ink/55"
+          >
+            welcome home ✿ come on in ✿ stay a while
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── 4. CATEGORY BENTO GRID (hyppy-style 4-col portrait grid) ─────────────────
 function CategoryRow() {
   const { forYou, forPet, childrenOf, loaded } = useStore();
   const forYouSubs = forYou ? childrenOf(forYou.id) : [];
@@ -123,27 +141,28 @@ function CategoryRow() {
 
   if (!loaded || all.length === 0) return null;
   return (
-    <section className="bg-cream py-12 sm:py-16">
+    <section className="bg-cream py-8 sm:py-10" data-testid="category-bento-grid">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div
-          className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-0 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8"
+          style={{ gap: "8px" }}
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
         >
           {all.map((c, i) => (
             <Link
               key={c.id}
               to={`/category/${c.slug}`}
               data-testid={`category-tile-${c.slug}`}
-              className="group animate-fade-up shrink-0 w-28 sm:w-auto"
+              className="group animate-fade-up"
               style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
             >
               <div className="overflow-hidden bg-oat">
                 <img
                   src={c.image || catImage(c.slug)}
                   alt={c.name}
-                  className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
+                  className="aspect-[4/5] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                 />
               </div>
-              <p className="mt-2 text-center text-[0.72rem] tracking-wide text-ink/60 group-hover:text-ink">
+              <p className="mt-2 text-center font-display text-lg text-ink group-hover:text-terracotta transition-colors">
                 {c.name}
               </p>
             </Link>
@@ -165,12 +184,12 @@ function ProductSection({ slug, title, to, bg = "bg-cream" }) {
   return (
     <section className={`${bg} py-12 sm:py-16`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-7 flex items-center justify-between gap-4">
-          <h2 className="font-display text-2xl italic text-ink sm:text-3xl">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <h2 className="font-display text-2xl italic text-ink sm:text-3xl lg:text-4xl">
             {title}
           </h2>
-          <Link to={to} className="shrink-0 text-sm text-ink/50 hover:text-ink">
-            view all &rarr;
+          <Link to={to} className="shrink-0 text-sm italic text-ink/45 hover:text-ink underline underline-offset-4">
+            view all
           </Link>
         </div>
         <ProductRow
@@ -178,7 +197,7 @@ function ProductSection({ slug, title, to, bg = "bg-cream" }) {
           loading={loading || !loaded || !cat}
           error={error}
           onRetry={reload}
-          emptyMsg="Assign products to this collection in WooCommerce and they&apos;ll show up here."
+          emptyMsg="Assign products to this collection in WooCommerce and they'll show up here."
         />
       </div>
     </section>
@@ -195,22 +214,20 @@ function SheerJoySection() {
   );
   if (!loading && !error && items.length === 0) return null;
   return (
-    <section className="bg-cream">
-      {/* Warm decorative banner */}
-      <div className="relative overflow-hidden bg-terracotta/10 px-6 py-12 text-center sm:py-16">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23b07248' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
-          }}
-        />
-        <h2 className="font-display text-4xl italic text-terracotta sm:text-5xl lg:text-6xl">
-          Sheer Joy ✨
-        </h2>
-        <p className="mt-3 text-sm italic text-ink/45">our sale picks — good things, better prices.</p>
-      </div>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+    <section className="bg-oat/40" data-testid="sheer-joy-section">
+      {/* Section heading */}
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <h2 className="font-display text-2xl italic text-terracotta sm:text-3xl lg:text-4xl">
+              Sheer Joy
+            </h2>
+            <p className="mt-1 text-sm italic text-ink/40">our sale picks — good things, better prices.</p>
+          </div>
+          <Link to="/category/on-sale" className="shrink-0 text-sm italic text-ink/45 hover:text-ink underline underline-offset-4">
+            view all
+          </Link>
+        </div>
         <ProductRow
           items={items}
           loading={loading || !loaded || !cat}
@@ -226,19 +243,18 @@ function SheerJoySection() {
 // ─── 8. OUR STORY ─────────────────────────────────────────────────────────────
 function OurStory() {
   return (
-    <section className="bg-softyellow py-16 sm:py-20">
+    <section className="bg-softyellow py-16 sm:py-20" data-testid="our-story-section">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center gap-10 md:flex-row md:items-center md:gap-16">
+        <div className="flex flex-col items-center gap-10 md:flex-row md:items-start md:gap-16">
           {/* Illustration */}
-          <div className="flex w-full shrink-0 items-center justify-center md:w-72 lg:w-80">
-            <img
-              src="https://freepngimg.com/download/svg/cartoon/10664-brother-and-sister-in-spring.svg"
-              alt="Brother and sister — the hearts behind Sojaru"
-              className="h-64 w-64 object-contain sm:h-72 sm:w-72"
-              onError={(e) => {
-                e.target.style.display = "none";
-              }}
-            />
+          <div className="w-full shrink-0 md:w-80 lg:w-96">
+            <div className="overflow-hidden rounded-sm shadow-md">
+              <img
+                src="https://static.prod-images.emergentagent.com/jobs/a362ff3d-4e3f-413b-9c58-8f38bd2c42b7/images/b758193c3085e04e391e8689697af752fd87580876232a36cd8bb16e037b413a.jpeg"
+                alt="The brother and sister behind Sojaru"
+                className="w-full object-cover"
+              />
+            </div>
           </div>
 
           {/* Text */}
@@ -288,6 +304,7 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <WarmMarquee />
       <WelcomeMessage />
       <FestiveSection />
       <CategoryRow />

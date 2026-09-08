@@ -68,10 +68,10 @@ export function Header() {
           {[...marquee, ...marquee, ...marquee, ...marquee].map((t, i) => (
             <span
               key={i}
-              className="mx-8 flex items-center gap-2 text-[0.72rem] italic text-ink/50"
+              className="mx-8 flex items-center gap-3 text-[0.8rem] italic text-ink/50"
               style={{ fontFamily: '"DM Serif Display", serif' }}
             >
-              {t} <span className="not-italic">·</span>
+              {t} <span className="not-italic text-ink/30">✿</span>
             </span>
           ))}
         </div>

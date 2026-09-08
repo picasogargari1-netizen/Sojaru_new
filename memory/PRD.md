@@ -20,6 +20,18 @@ Build "Sojaru", a custom headless storefront on top of a live WordPress + WooCom
 - Storefront: Home (hero, two worlds, shop-by-category, featured/new/sale/best-seller rows, editorial banner), World pages, Category pages (filters/sort/load-more), Product detail (gallery, variations, qty, add/buy, accordions, related, JSON-LD), Search (dialog + results page), Cart drawer (free-ship progress, coupon at checkout), Checkout (order creation -> WooCommerce hosted payment link), Account (orders/profile/addresses), Login/Register, About/Contact/FAQ/Shipping/Privacy/Terms, 404.
 - SEO meta/OG/canonical per page, product structured data.
 
+## Homepage Redesign (2026-09) — hyppy.in match
+- Marquee rolling ticker above header (admin-configurable from MongoDB)
+- Hero image slider (admin-uploadable)
+- Warm italic "welcome home ✿ come on in ✿ stay a while" marquee below hero
+- "hello! welcome home :)" welcome section with brand message
+- Festive Collections section (admin-configured category, title, enabled toggle)
+- Sub-categories BENTO GRID: 4-column portrait (4:5 ratio, 8px gap) grid matching hyppy.in exactly — large serif category names below images
+- "your favorites are back.." section (products from featured-collection WooCommerce category)
+- "Our Best Sellers" section (products from best-sellers category)
+- "Sheer Joy" section (products from on-sale category, terracotta heading)
+- "Our Story" section with AI-generated Indian brother-sister cartoon illustration
+
 ## Payment note
 Checkout creates a pending WooCommerce order via REST, then hands off to the store's WooCommerce hosted "order-pay" URL for actual payment (uses whatever gateways the owner configured). No card data touches this app.
 
