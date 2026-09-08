@@ -675,6 +675,67 @@ async def admin_delete_hero(image_id: str, admin: dict = Depends(get_admin_user)
     return public_settings(doc)
 
 
+# ---------------------------------------------------------------------------
+# CUSTOMIZABLE PRODUCTS CRUD
+# ---------------------------------------------------------------------------
+def _cp_out(doc: dict) -> dict:
+    return {
+        "id": str(doc["_id"]),
+        "product_type": doc.get("product_type", ""),
+        "size": doc.get("size", ""),
+        "color": doc.get("color", ""),
+        "material": doc.get("material", ""),
+    }
+
+
+@api.get("/admin/customizable-products")
+async def list_customizable_products(admin_user: dict = Depends(get_admin_user)):
+    docs = await db.customizable_products.find({}).sort("_id", 1).to_list(None)
+    return [_cp_out(d) for d in docs]
+
+
+@api.post("/admin/customizable-products")
+async def create_customizable_product(body: dict, admin_user: dict = Depends(get_admin_user)):
+    doc = {
+        "product_type": (body.get("product_type") or "").strip(),
+        "size": (body.get("size") or "").strip(),
+        "color": (body.get("color") or "").strip(),
+        "material": (body.get("material") or "").strip(),
+    }
+    result = await db.customizable_products.insert_one(doc)
+    doc["_id"] = result.inserted_id
+    return _cp_out(doc)
+
+
+@api.put("/admin/customizable-products/{item_id}")
+async def update_customizable_product(item_id: str, body: dict, admin_user: dict = Depends(get_admin_user)):
+    from bson import ObjectId
+    try:
+        oid = ObjectId(item_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid id")
+    update = {k: (body.get(k) or "").strip() for k in ("product_type", "size", "color", "material")}
+    res = await db.customizable_products.find_one_and_update(
+        {"_id": oid}, {"$set": update}, return_document=True
+    )
+    if not res:
+        raise HTTPException(status_code=404, detail="Not found")
+    return _cp_out(res)
+
+
+@api.delete("/admin/customizable-products/{item_id}")
+async def delete_customizable_product(item_id: str, admin_user: dict = Depends(get_admin_user)):
+    from bson import ObjectId
+    try:
+        oid = ObjectId(item_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid id")
+    res = await db.customizable_products.delete_one({"_id": oid})
+    if res.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"ok": True}
+
+
 app.include_router(api)
 app.add_middleware(
     CORSMiddleware,

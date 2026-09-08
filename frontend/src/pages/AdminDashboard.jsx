@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Upload, Trash2, Plus, X, LogOut, Image as ImageIcon, Type, Sparkles, LayoutTemplate, Grid3x3 } from "lucide-react";
+import { Loader2, Upload, Trash2, Plus, X, LogOut, Image as ImageIcon, Type, Sparkles, LayoutTemplate, Grid3x3, Pencil, Check, Package } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { useStore } from "@/context/StoreContext";
@@ -287,6 +287,193 @@ function CategoryImagesManager() {
   );
 }
 
+const EMPTY_ROW = { product_type: "", size: "", color: "", material: "" };
+const COLS = [
+  { key: "product_type", label: "Product Type", placeholder: "e.g. T-Shirt" },
+  { key: "size",         label: "Size",         placeholder: "e.g. S, M, L, XL" },
+  { key: "color",        label: "Color",        placeholder: "e.g. Red, Blue" },
+  { key: "material",     label: "Material",     placeholder: "e.g. 100% Cotton" },
+];
+
+function CustomizableProductsManager() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editId, setEditId] = useState(null);   // id being edited, or "new"
+  const [draft, setDraft] = useState(EMPTY_ROW);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(null);
+
+  const load = async () => {
+    try { setRows(await admin.listCustomizableProducts()); }
+    catch (err) { toast.error(apiErr(err, "Failed to load")); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const startAdd = () => { setEditId("new"); setDraft(EMPTY_ROW); };
+  const startEdit = (row) => { setEditId(row.id); setDraft({ product_type: row.product_type, size: row.size, color: row.color, material: row.material }); };
+  const cancelEdit = () => { setEditId(null); setDraft(EMPTY_ROW); };
+
+  const save = async () => {
+    if (!draft.product_type.trim()) { toast.error("Product Type is required"); return; }
+    setSaving(true);
+    try {
+      if (editId === "new") {
+        const created = await admin.createCustomizableProduct(draft);
+        setRows((r) => [...r, created]);
+        toast.success("Product added");
+      } else {
+        const updated = await admin.updateCustomizableProduct(editId, draft);
+        setRows((r) => r.map((x) => (x.id === editId ? updated : x)));
+        toast.success("Product updated");
+      }
+      cancelEdit();
+    } catch (err) { toast.error(apiErr(err, "Save failed")); }
+    finally { setSaving(false); }
+  };
+
+  const remove = async (id) => {
+    setDeleting(id);
+    try {
+      await admin.deleteCustomizableProduct(id);
+      setRows((r) => r.filter((x) => x.id !== id));
+      toast.success("Deleted");
+    } catch (err) { toast.error(apiErr(err)); }
+    finally { setDeleting(null); }
+  };
+
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-ink" /></div>;
+
+  return (
+    <div data-testid="customizable-products-manager">
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <p className="text-sm text-muted-foreground">
+          Manage the list of products that can be customised — shown to customers as reference.
+        </p>
+        {editId !== "new" && (
+          <Button
+            onClick={startAdd}
+            data-testid="cp-add-btn"
+            className="shrink-0 rounded-none bg-ink font-bold uppercase text-cream hover:bg-yellow hover:text-ink"
+          >
+            <Plus className="mr-2 h-4 w-4" /> Add Product
+          </Button>
+        )}
+      </div>
+
+      <div className="overflow-x-auto border-2 border-ink">
+        <table className="w-full min-w-[640px] text-sm">
+          <thead className="bg-ink text-cream">
+            <tr>
+              {COLS.map((c) => (
+                <th key={c.key} className="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest">
+                  {c.label}
+                </th>
+              ))}
+              <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-widest">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* Add new row */}
+            {editId === "new" && (
+              <tr className="border-b-2 border-ink bg-softyellow" data-testid="cp-new-row">
+                {COLS.map((c) => (
+                  <td key={c.key} className="px-3 py-2">
+                    <Input
+                      value={draft[c.key]}
+                      onChange={(e) => setDraft((d) => ({ ...d, [c.key]: e.target.value }))}
+                      placeholder={c.placeholder}
+                      data-testid={`cp-new-${c.key}`}
+                      className="h-8 rounded-none border-ink bg-cream text-xs"
+                    />
+                  </td>
+                ))}
+                <td className="px-3 py-2 text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    <button onClick={save} disabled={saving} data-testid="cp-save-new" className="flex items-center gap-1 bg-ink px-3 py-1.5 text-xs font-bold text-cream hover:bg-green-700 disabled:opacity-50">
+                      {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />} Save
+                    </button>
+                    <button onClick={cancelEdit} className="flex items-center gap-1 border border-ink px-3 py-1.5 text-xs hover:bg-ink hover:text-cream" data-testid="cp-cancel-new">
+                      <X className="h-3 w-3" /> Cancel
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )}
+
+            {rows.length === 0 && editId !== "new" && (
+              <tr>
+                <td colSpan={5} className="py-10 text-center text-sm italic text-ink/40">
+                  No customisable products yet. Click "Add Product" to get started.
+                </td>
+              </tr>
+            )}
+
+            {rows.map((row) =>
+              editId === row.id ? (
+                /* Edit row */
+                <tr key={row.id} className="border-b border-ink/20 bg-softyellow" data-testid={`cp-edit-row-${row.id}`}>
+                  {COLS.map((c) => (
+                    <td key={c.key} className="px-3 py-2">
+                      <Input
+                        value={draft[c.key]}
+                        onChange={(e) => setDraft((d) => ({ ...d, [c.key]: e.target.value }))}
+                        placeholder={c.placeholder}
+                        data-testid={`cp-edit-${c.key}`}
+                        className="h-8 rounded-none border-ink bg-cream text-xs"
+                      />
+                    </td>
+                  ))}
+                  <td className="px-3 py-2 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button onClick={save} disabled={saving} data-testid={`cp-save-${row.id}`} className="flex items-center gap-1 bg-ink px-3 py-1.5 text-xs font-bold text-cream hover:bg-green-700 disabled:opacity-50">
+                        {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />} Save
+                      </button>
+                      <button onClick={cancelEdit} className="flex items-center gap-1 border border-ink px-3 py-1.5 text-xs hover:bg-ink hover:text-cream" data-testid={`cp-cancel-${row.id}`}>
+                        <X className="h-3 w-3" /> Cancel
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                /* Display row */
+                <tr key={row.id} className="border-b border-ink/10 odd:bg-cream even:bg-oat/30 hover:bg-softyellow/60 transition-colors" data-testid={`cp-row-${row.id}`}>
+                  {COLS.map((c) => (
+                    <td key={c.key} className="px-4 py-3 text-ink/80">
+                      {row[c.key] || <span className="text-ink/30">—</span>}
+                    </td>
+                  ))}
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => startEdit(row)}
+                        disabled={!!editId}
+                        data-testid={`cp-edit-btn-${row.id}`}
+                        className="flex items-center gap-1 border border-ink px-3 py-1.5 text-xs font-medium hover:bg-ink hover:text-cream disabled:opacity-30"
+                      >
+                        <Pencil className="h-3 w-3" /> Edit
+                      </button>
+                      <button
+                        onClick={() => remove(row.id)}
+                        disabled={deleting === row.id || !!editId}
+                        data-testid={`cp-delete-btn-${row.id}`}
+                        className="flex items-center gap-1 border border-destructive px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive hover:text-white disabled:opacity-30"
+                      >
+                        {deleting === row.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />} Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   usePageMeta({ title: "Admin Dashboard — Sojaru" });
   const { user, ready, logout } = useAuth();
@@ -311,12 +498,14 @@ export default function AdminDashboard() {
           <TabsTrigger value="marquee" className="rounded-none border-2 border-ink data-[state=active]:bg-yellow" data-testid="admin-tab-marquee"><Type className="mr-2 h-4 w-4" /> Moving Text</TabsTrigger>
           <TabsTrigger value="festive" className="rounded-none border-2 border-ink data-[state=active]:bg-yellow" data-testid="admin-tab-festive"><Sparkles className="mr-2 h-4 w-4" /> Festive Collection</TabsTrigger>
           <TabsTrigger value="categories" className="rounded-none border-2 border-ink data-[state=active]:bg-yellow" data-testid="admin-tab-categories"><Grid3x3 className="mr-2 h-4 w-4" /> Category Images</TabsTrigger>
+          <TabsTrigger value="customizable" className="rounded-none border-2 border-ink data-[state=active]:bg-yellow" data-testid="admin-tab-customizable"><Package className="mr-2 h-4 w-4" /> Customizable Products</TabsTrigger>
         </TabsList>
         <TabsContent value="hero"><HeroManager /></TabsContent>
         <TabsContent value="herotext"><HeroTextManager /></TabsContent>
         <TabsContent value="marquee"><MarqueeManager /></TabsContent>
         <TabsContent value="festive"><FestiveManager /></TabsContent>
         <TabsContent value="categories"><CategoryImagesManager /></TabsContent>
+        <TabsContent value="customizable"><CustomizableProductsManager /></TabsContent>
       </Tabs>
     </div>
   );

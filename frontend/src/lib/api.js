@@ -32,6 +32,11 @@ export const admin = {
   deleteHero: (id) => client.delete(`/admin/hero-images/${id}`).then((r) => r.data),
   uploadCategoryImage: (slug, formData) => client.post(`/admin/category-images/${slug}`, formData, { headers: { "Content-Type": "multipart/form-data" } }).then((r) => r.data),
   deleteCategoryImage: (slug) => client.delete(`/admin/category-images/${slug}`).then((r) => r.data),
+  // Customizable Products
+  listCustomizableProducts: () => client.get("/admin/customizable-products").then((r) => r.data),
+  createCustomizableProduct: (body) => client.post("/admin/customizable-products", body).then((r) => r.data),
+  updateCustomizableProduct: (id, body) => client.put(`/admin/customizable-products/${id}`, body).then((r) => r.data),
+  deleteCustomizableProduct: (id) => client.delete(`/admin/customizable-products/${id}`).then((r) => r.data),
 };
 
 export const products = {
