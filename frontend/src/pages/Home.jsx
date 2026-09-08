@@ -33,7 +33,9 @@ function Hero() {
     <section className="relative">
       <div className="absolute inset-0 overflow-hidden bg-ink">
         {heroImages.map((img, i) => (
-          <img key={i} src={img.src} alt={img.alt} className={`absolute inset-0 h-full w-full object-cover object-[72%_center] transition-opacity duration-1000 ${i === idx ? "opacity-100" : "opacity-0"}`} />
+          <img key={i} src={img.src} alt={img.alt}
+            onError={(e) => { e.target.src = IMAGES.hero; }}
+            className={`absolute inset-0 h-full w-full object-cover object-[72%_center] transition-opacity duration-1000 ${i === idx ? "opacity-100" : "opacity-0"}`} />
         ))}
         <div className="absolute inset-0 bg-gradient-to-r from-ink/65 via-ink/25 to-transparent" />
       </div>
