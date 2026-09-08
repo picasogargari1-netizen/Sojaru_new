@@ -16,7 +16,9 @@ export function StoreProvider({ children }) {
   const reloadSettings = () => store.settings().then(setSettings).catch(() => {});
 
   useEffect(() => {
-    store.config().then((c) => { setSymbol(c.currency_symbol || "₹"); setCode(c.currency_code || "INR"); }).catch(() => {});
+    // Always use INR for this Indian storefront; ignore WooCommerce currency setting
+    setSymbol("₹");
+    setCode("INR");
     reloadSettings();
     store.categories()
       .then((c) => setCategories(c))
