@@ -221,6 +221,8 @@ function ProductSection({ slug, title, to, bg = "bg-cream" }) {
     { category: cat?.id, per_page: 8 },
     [cat?.id]
   );
+  // When categories loaded but slug not found (WC API down / slug mismatch) → show error not infinite spinner
+  const catMissing = loaded && !cat;
   return (
     <section className={`${bg} py-12 sm:py-16`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -234,8 +236,8 @@ function ProductSection({ slug, title, to, bg = "bg-cream" }) {
         </div>
         <ProductRow
           items={items}
-          loading={loading || !loaded || !cat}
-          error={error}
+          loading={loading || !loaded}
+          error={error || catMissing}
           onRetry={reload}
           emptyMsg="Assign products to this collection in WooCommerce and they'll show up here."
         />
@@ -252,7 +254,8 @@ function SheerJoySection() {
     { category: cat?.id, per_page: 8 },
     [cat?.id]
   );
-  if (!loading && !error && items.length === 0) return null;
+  const catMissing = loaded && !cat;
+  if (!loading && !error && !catMissing && items.length === 0) return null;
   return (
     <section className="bg-oat/40" data-testid="sheer-joy-section">
       {/* Section heading */}
@@ -270,8 +273,8 @@ function SheerJoySection() {
         </div>
         <ProductRow
           items={items}
-          loading={loading || !loaded || !cat}
-          error={error}
+          loading={loading || !loaded}
+          error={error || catMissing}
           onRetry={reload}
           emptyMsg="Add products to your on-sale collection in WooCommerce."
         />

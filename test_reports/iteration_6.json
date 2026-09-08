@@ -1,0 +1,53 @@
+{
+  "summary": "Confirmed WooCommerce API outage root cause and documented frontend behavior. Backend is healthy; all product/category API calls fail with 'Store request failed' due to external WooCommerce site returning 404. Non-WooCommerce UI sections work correctly.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "/api/products and /api/categories",
+        "issue": "Returns 404 from external WooCommerce (sojaru.co.in/wp-json/wc/v3). Backend responds with {\"detail\": \"Store request failed.\"}. ROOT CAUSE: WordPress permalink settings broken on Hostinger — /wp-json/ itself returns 404. NOT a code bug.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Product sections (your favorites are back, Our Best Sellers, Sheer Joy)",
+        "issue": "Product cards show skeleton/shimmer loading state permanently — no products displayed. No error shown to user for these sections (infinite loading state, not graceful error). Only 'Durga Pujo Collections' shows the 'Something went sideways / Try again' error UI.",
+        "affected_selectors": ["ProductSection skeleton cards"]
+      }
+    ],
+    "design_issues": [
+      {
+        "screen": "Homepage product sections",
+        "issues": ["'your favorites are back', 'Our Best Sellers', 'Sheer Joy' sections show skeleton shimmer cards indefinitely with no error message — user has no feedback that products failed to load. Only 'Durga Pujo Collections' shows the correct error/retry UI. Consider showing error state for all product sections."]
+      }
+    ]
+  },
+  "verified_working": [
+    "GET /api/ returns {brand: Sojaru, status: ok} — backend is healthy",
+    "Marquee ticker working: 'Free shipping over ₹999', 'Curated for you & your best friend', 'Made in India, with love'",
+    "Hero image loads correctly",
+    "Welcome text: 'We are back! :)' and 'hello! welcome home :)' visible",
+    "Category bento grid section absent (no categories loaded — renders null as expected)",
+    "Our Story section loads correctly with image and text",
+    "Navigation links present and visible",
+    "Footer renders correctly"
+  ],
+  "test_report_links": ["/app/test_reports/iteration_6.json"],
+  "action_items": [
+    "EXTERNAL ISSUE (not code): Fix WordPress permalink settings on Hostinger for sojaru.co.in — go to WP Admin > Settings > Permalinks and re-save to regenerate .htaccess. This will restore /wp-json/ REST API endpoint.",
+    "CODE IMPROVEMENT: 'your favorites are back', 'Our Best Sellers', 'Sheer Joy' sections show skeleton shimmer indefinitely when API fails — should show error/retry UI like 'Durga Pujo Collections' does. Implement consistent error state across all product sections."
+  ],
+  "critical_code_review_comments": [
+    "Inconsistent error state handling: 'Durga Pujo Collections' ProductSection correctly shows error/retry UI but other product sections ('your favorites are back', 'Our Best Sellers', 'Sheer Joy') show skeleton shimmer indefinitely on API failure. All sections should show error/retry consistently."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "33% (1/3 non-WC endpoints work, WC-dependent endpoints fail due to external issue)", "frontend": "70% (non-product sections work; product sections broken due to external API)"},
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Root cause is external: WordPress /wp-json/ returns 404 on sojaru.co.in (Hostinger hosting, permalink settings). Backend code is correct. Once WooCommerce REST API is fixed on the WordPress side, products/categories will load. After fix, test /api/products, /api/categories, and all homepage product sections. Also check that category bento grid appears once categories API returns data.",
+  "rca_of_issue": "WordPress REST API disabled/broken on Hostinger. sojaru.co.in/wp-json/ returns 404 HTML page. This breaks all WooCommerce API calls (GET /wp-json/wc/v3/products, /wp-json/wc/v3/categories). Fix: WP Admin > Settings > Permalinks > Save Changes (regenerates .htaccess rewrite rules that enable pretty permalinks and REST API routing)."
+}
