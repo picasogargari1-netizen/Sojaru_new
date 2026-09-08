@@ -14,6 +14,7 @@ function Hero() {
   const heroImages = settings?.hero_images?.length
     ? settings.hero_images.map((h) => ({ src: mediaUrl(h.url), alt: h.alt }))
     : [{ src: IMAGES.hero, alt: "Sojaru lifestyle" }];
+  const heroText = settings?.hero?.subtitle || "";
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
@@ -37,7 +38,23 @@ function Hero() {
             }`}
           />
         ))}
+        {/* Subtle overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30" />
       </div>
+
+      {/* Hero text overlay from admin */}
+      {heroText && (
+        <div className="absolute inset-0 flex items-center justify-center px-6" data-testid="hero-text-overlay">
+          <p
+            className="max-w-2xl text-center font-display text-3xl italic text-white sm:text-4xl lg:text-5xl"
+            style={{ textShadow: "0 2px 12px rgba(0,0,0,0.45)" }}
+          >
+            {heroText}
+          </p>
+        </div>
+      )}
+
+      {/* Slide dots */}
       {heroImages.length > 1 && (
         <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
           {heroImages.map((_, i) => (
@@ -47,7 +64,7 @@ function Hero() {
               aria-label={`Slide ${i + 1}`}
               data-testid={`hero-dot-${i}`}
               className={`h-0.5 transition-all ${
-                i === idx ? "w-8 bg-ink" : "w-3 bg-ink/30 hover:bg-ink/60"
+                i === idx ? "w-8 bg-white" : "w-3 bg-white/40 hover:bg-white/70"
               }`}
             />
           ))}
